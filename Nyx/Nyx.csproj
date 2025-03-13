@@ -23,13 +23,13 @@
 
   <ItemGroup>
     <Reference Include="DearImGuiInjection">
-      <HintPath>External\DearImGuiInjection.dll</HintPath>
+      <HintPath>External\DearImGuiInjection\DearImGuiInjection.dll</HintPath>
     </Reference>
     <Reference Include="Il2Cppmscorlib">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
     </Reference>
     <Reference Include="ImGui.NET">
-      <HintPath>External\ImGui.NET.dll</HintPath>
+      <HintPath>External\DearImGuiInjection\ImGui.NET.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
