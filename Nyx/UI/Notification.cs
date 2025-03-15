@@ -7,16 +7,18 @@ namespace Nyx.UI
 		public string Title { get; set; }
 		public string Content { get; set; }
 		public float TimeLeft { get; set; }
+		public float Duration { get; set; }
 		public Vector2 Position { get; set; }
-		public float Alpha { get; set; }
 		public float CurrentY { get; set; }
-
-		public Notification(string title, string content, float duration = 5.0f)
+		public float Alpha { get; set; } = 0.0f;
+		public double StartTime { get; set; }
+		
+		public Notification(string title, string content, float duration)
 		{
 			Title = title;
 			Content = content;
 			TimeLeft = duration;
-			Alpha = 1.0f;
+			Duration = duration;
 		}
 	}
 }

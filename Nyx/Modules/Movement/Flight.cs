@@ -51,7 +51,13 @@ namespace Nyx.Modules.Movement
 		public override void OnMenu()
 		{
 			ImGui.PushID("fly_speed");
-			ImGui.SliderFloat("Speed", ref speed, 1.0f, 50.0f);
+
+			float spd = speed;
+			if (ImGui.SliderFloat("Speed", ref speed, 1.0f, 50.0f))
+			{
+				speed = spd;
+			}
+
 			ImGui.PopID();
 		}
 

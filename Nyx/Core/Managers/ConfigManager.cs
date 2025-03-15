@@ -91,10 +91,13 @@ namespace Nyx.Core.Managers
 					{
 						try
 						{
-							if (config.IsEnabled && !module.IsEnabled)
-								module.Enable();
-							else if (!config.IsEnabled && module.IsEnabled)
-								module.Disable();
+							if (module.Name != "Menu")
+							{
+								if (config.IsEnabled && !module.IsEnabled)
+									module.Enable();
+								else if (!config.IsEnabled && module.IsEnabled)
+									module.Disable();
+							}
 
 							if (config.CurrentMode != -1)
 							{

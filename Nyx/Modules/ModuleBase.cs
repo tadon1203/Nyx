@@ -85,7 +85,7 @@ namespace Nyx.Modules
 			{
 				OnUpdate();
 			}
-			if (ToggleKey != KeyCode.None && Input.GetKeyDown(ToggleKey))
+			if (ToggleKey != KeyCode.None && Input.GetKeyDown(ToggleKey) && Input.GetKeyDown(KeyCode.LeftShift))
 			{
 				Toggle();
 			}
