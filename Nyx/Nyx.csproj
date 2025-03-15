@@ -26,19 +26,19 @@
       <HintPath>External\DearImGuiInjection\DearImGuiInjection.dll</HintPath>
     </Reference>
     <Reference Include="Il2Cppmscorlib">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
+      <HintPath>External\Game\Il2Cppmscorlib.dll</HintPath>
     </Reference>
     <Reference Include="ImGui.NET">
       <HintPath>External\DearImGuiInjection\ImGui.NET.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>External\Game\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>External\Game\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="VRCSDKBase">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\BepInEx\interop\VRCSDKBase.dll</HintPath>
+      <HintPath>External\Game\VRCSDKBase.dll</HintPath>
     </Reference>
   </ItemGroup>
 
