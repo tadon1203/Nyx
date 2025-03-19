@@ -51,15 +51,29 @@ namespace Nyx.Modules.Movement
 		public override void OnMenu()
 		{
 			ImGui.PushID("fly_speed");
-
 			float spd = speed;
-			if (ImGui.SliderFloat("Speed", ref speed, 1.0f, 50.0f))
+			if (ImGui.SliderFloat("Speed", ref spd, 1.0f, 50.0f))
 			{
 				speed = spd;
 			}
-
 			ImGui.PopID();
 		}
+
+		public override void OnEnable()
+        {
+            if (Networking.LocalPlayer == null)
+                return;
+
+            Networking.LocalPlayer.gameObject.GetComponent<CharacterController>().enabled = false;
+        }
+
+        public override void OnDisable()
+        {
+            if (Networking.LocalPlayer == null)
+                return;
+
+            Networking.LocalPlayer.gameObject.GetComponent<CharacterController>().enabled = true;
+        }
 
 		public void SaveModuleConfig(ModuleConfig config)
 		{

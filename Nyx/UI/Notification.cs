@@ -1,4 +1,4 @@
-﻿using Nyx.Core.Utils;
+﻿using System.Numerics;
 
 namespace Nyx.UI
 {

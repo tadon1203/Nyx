@@ -11,6 +11,7 @@ namespace Nyx.Core.Managers
 			{ typeof(Modules.Visual.Menu), new Modules.Visual.Menu() },
 			{ typeof(Modules.Movement.Flight), new Modules.Movement.Flight() },
 			{ typeof(Modules.Movement.TargetStrafe), new Modules.Movement.TargetStrafe()},
+			{ typeof(Modules.Visual.ESP), new Modules.Visual.ESP() },
 		};
 
 		public static T GetModule<T>() where T : ModuleBase

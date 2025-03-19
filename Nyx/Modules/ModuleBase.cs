@@ -1,4 +1,5 @@
-﻿using Nyx.Core.Managers;
+﻿using Nyx.Core;
+using Nyx.Core.Managers;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,7 +38,7 @@ namespace Nyx.Modules
 		{
 			if (!IsEnabled)
 			{
-				NotificationManager.AddNotification("Module", $"Enabled {Name}");
+				NotificationManager.AddNotification("Module", $"Enabled {Name}.");
 				IsEnabled = true;
 				OnEnable();
 			}
@@ -47,7 +48,7 @@ namespace Nyx.Modules
 		{
 			if (IsEnabled)
 			{
-				NotificationManager.AddNotification("Module", $"Disabled {Name}");
+				NotificationManager.AddNotification("Module", $"Disabled {Name}.");
 				IsEnabled = false;
 				OnDisable();
 			}
@@ -85,7 +86,7 @@ namespace Nyx.Modules
 			{
 				OnUpdate();
 			}
-			if (ToggleKey != KeyCode.None && Input.GetKeyDown(ToggleKey) && Input.GetKeyDown(KeyCode.LeftShift))
+			if (ToggleKey != KeyCode.None && Input.GetKeyDown(ToggleKey))
 			{
 				Toggle();
 			}

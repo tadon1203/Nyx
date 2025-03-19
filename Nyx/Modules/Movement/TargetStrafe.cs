@@ -1,5 +1,6 @@
 using ImGuiNET;
 using Nyx.Core.Configuration;
+using Nyx.Core.Managers;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -32,7 +33,7 @@ namespace Nyx.Modules.Movement
 
                 Vector3 newPosition = new Vector3(x, localPlayer.GetPosition().y, z);
 
-                localPlayer.TeleportTo(newPosition, localPlayer.GetRotation());
+                localPlayer.gameObject.transform.position = newPosition;
 
                 Vector3 lookDirection = targetPosition - newPosition;
                 lookDirection.y = 0;
@@ -44,9 +45,24 @@ namespace Nyx.Modules.Movement
             }
         }
 
+        public override void OnEnable()
+        {
+            if (Networking.LocalPlayer == null)
+                return;
+
+            Networking.LocalPlayer.gameObject.GetComponent<CharacterController>().enabled = false;
+        }
+
+        public override void OnDisable()
+        {
+            if (Networking.LocalPlayer == null)
+                return;
+
+            Networking.LocalPlayer.gameObject.GetComponent<CharacterController>().enabled = true;
+        }
+
         public override void OnMenu()
         {
-            
             float speed = strafeSpeed;
             if (ImGui.SliderFloat("Strafe Speed", ref speed, 0.5f, 10.0f, "%.1f"))
             {
@@ -54,7 +70,7 @@ namespace Nyx.Modules.Movement
             }
 
             float radius = strafeRadius;
-            if (ImGui.SliderFloat("Strafe Radius", ref radius, 1.0f, 10.0f, "%.1f"))
+            if (ImGui.SliderFloat("Strafe Radius", ref radius, 0.0f, 10.0f, "%.1f"))
             {
                 strafeRadius = radius;
             }
@@ -65,14 +81,14 @@ namespace Nyx.Modules.Movement
             if (Networking.LocalPlayer == null)
                 return;
 
-            if (ImGui.BeginListBox("##PlayerList", new Core.Utils.Vector2(-1, 200)))
+            if (ImGui.BeginListBox("##PlayerList", new Vector2(-1, 200).ToSystem()))
             {
                 foreach (var player in VRCPlayerApi.AllPlayers)
                 {
                     if (player.isLocal)
                         continue;
                     
-                    bool isSelected = (target != null && target.playerId == player.playerId);
+                    bool isSelected = target != null && target.playerId == player.playerId;
                     string playerName = player.displayName;
                     
                     if (ImGui.Selectable(playerName, isSelected))

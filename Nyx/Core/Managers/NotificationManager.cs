@@ -3,6 +3,7 @@ using Nyx.Core.Utils;
 using Nyx.UI;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Nyx.Core.Managers
 {
@@ -19,8 +20,8 @@ namespace Nyx.Core.Managers
 		{
 			var notification = new Notification(title, content, duration);
 			Vector2 windowSize = ImGui.GetIO().DisplaySize;
-			notification.Position = new Vector2(windowSize.x - width - padding, windowSize.y - padding);
-			notification.CurrentY = windowSize.y - padding;
+			notification.Position = new Vector2(windowSize.X - width - padding, windowSize.Y - padding);
+			notification.CurrentY = windowSize.Y - padding;
 			notification.StartTime = ImGui.GetTime();
 			notifications.Add(notification);
 		}
@@ -43,8 +44,8 @@ namespace Nyx.Core.Managers
 					notification.Alpha = notification.TimeLeft / fadeOutTime;
 					
 					notification.Position = new Vector2(
-						notification.Position.x + (12.0f * deltaTime),
-						notification.Position.y
+						notification.Position.X + (12.0f * deltaTime),
+						notification.Position.Y
 					);
 				}
 				else
@@ -58,7 +59,7 @@ namespace Nyx.Core.Managers
 			}
 			
 			Vector2 windowSize = new(UnityEngine.Screen.width, UnityEngine.Screen.height);
-			float targetY = windowSize.y - padding;
+			float targetY = windowSize.Y - padding;
 			
 			for (int i = 0; i < notifications.Count; i++)
 			{
@@ -68,7 +69,7 @@ namespace Nyx.Core.Managers
 				
 				float easeFactor = 10.0f * deltaTime;
 				notification.CurrentY = MathUtils.Lerp(notification.CurrentY, targetY, easeFactor);
-				notification.Position = new Vector2(windowSize.x - width - padding, notification.CurrentY);
+				notification.Position = new Vector2(windowSize.X - width - padding, notification.CurrentY);
 				targetY -= padding;
 			}
 		}
@@ -89,24 +90,24 @@ namespace Nyx.Core.Managers
 			
 			uint backgroundColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.12f, 0.14f, 0.17f, notification.Alpha * 0.95f));
 			uint borderColor = ImGui.ColorConvertFloat4ToU32(new Vector4(
-				accentColor.x, accentColor.y, accentColor.z, notification.Alpha * 0.7f));
+				accentColor.X, accentColor.Y, accentColor.Z, notification.Alpha * 0.7f));
 			uint titleColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, notification.Alpha));
 			uint contentColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.9f, 0.9f, 0.9f, notification.Alpha * 0.9f));
 			uint accentBarColor = ImGui.ColorConvertFloat4ToU32(new Vector4(
-				accentColor.x, accentColor.y, accentColor.z, notification.Alpha));
+				accentColor.X, accentColor.Y, accentColor.Z, notification.Alpha));
 			
 			float cornerRadius = 6.0f;
 			
 			drawList.AddRectFilled(
 				position,
-				new Vector2(position.x + width, position.y + height),
+				new Vector2(position.X + width, position.Y + height),
 				backgroundColor,
 				cornerRadius
 			);
 			
 			drawList.AddRectFilled(
 				position,
-				new Vector2(position.x + 4.0f, position.y + height),
+				new Vector2(position.X + 4.0f, position.Y + height),
 				accentBarColor,
 				cornerRadius, 
 				ImDrawFlags.RoundCornersLeft
@@ -116,32 +117,31 @@ namespace Nyx.Core.Managers
 			float progressWidth = width * timeRatio;
 			
 			drawList.AddRectFilled(
-				new Vector2(position.x, position.y),
-				new Vector2(position.x + progressWidth, position.y + 2.0f),
+				new Vector2(position.X, position.Y),
+				new Vector2(position.X + progressWidth, position.Y + 2.0f),
 				accentBarColor,
 				0.0f
 			);
 			
 			drawList.AddRect(
 				position,
-				new Vector2(position.x + width, position.y + height),
+				new Vector2(position.X + width, position.Y + height),
 				borderColor,
 				cornerRadius,
 				ImDrawFlags.RoundCornersAll,
 				1.0f
 			);
 			
-			Vector2 titlePos = new Vector2(position.x + padding + 4.0f, position.y + padding);
+			Vector2 titlePos = new Vector2(position.X + padding + 4.0f, position.Y + padding);
 			
 			drawList.AddText(
-				new Vector2(titlePos.x + 1, titlePos.y + 1),
+				new Vector2(titlePos.X + 1, titlePos.Y + 1),
 				ImGui.ColorConvertFloat4ToU32(new Vector4(0.0f, 0.0f, 0.0f, notification.Alpha * 0.5f)),
 				notification.Title
 			);
 			drawList.AddText(titlePos, titleColor, notification.Title);
 			
-			Vector2 contentPos = new Vector2(position.x + padding + 4.0f, 
-											position.y + padding + ImGui.GetTextLineHeightWithSpacing());
+			Vector2 contentPos = new Vector2(position.X + padding + 4.0f, position.Y + padding + ImGui.GetTextLineHeightWithSpacing());
 			drawList.AddText(
 				ImGui.GetFont(),
 				ImGui.GetFontSize(),
@@ -156,7 +156,7 @@ namespace Nyx.Core.Managers
 		{
 			float titleHeight = ImGui.GetTextLineHeight();
 			Vector2 contentSize = ImGui.CalcTextSize(notification.Content, false, width - (padding * 2) - 4.0f);
-			float contentHeight = contentSize.y;
+			float contentHeight = contentSize.Y;
 			return padding * 2 + titleHeight + ImGui.GetStyle().ItemSpacing.Y + contentHeight;
 		}
 	}

@@ -5,13 +5,14 @@ using Nyx.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace Nyx.Modules.Visual
 {
     public class Menu : ModuleBase, IConfigurableModule
     {
         private Vector2 windowSize = new(800, 650);
-        private float[] columnWidths = new float[] { 150.0f, 200.0f };
+        private float[] columnWidths = [150.0f, 200.0f];
 
         private int selectedCategoryIndex = -1;
         private ModuleBase selectedModule = null;
@@ -769,8 +770,8 @@ namespace Nyx.Modules.Visual
             config.SetSetting("FavoriteModules", string.Join(",", favoriteModules));
             config.SetSetting("RecentModules", string.Join(",", recentModules));
 
-            config.SetSetting("WindowWidth", windowSize.x);
-            config.SetSetting("WindowHeight", windowSize.y);
+            config.SetSetting("WindowWidth", windowSize.X);
+            config.SetSetting("WindowHeight", windowSize.Y);
             config.SetSetting("Column0Width", columnWidths[0]);
             config.SetSetting("Column1Width", columnWidths[1]);
             config.SetSetting("SortAscending", sortAscending);
@@ -807,8 +808,8 @@ namespace Nyx.Modules.Visual
 
         private void LoadUISettings(ModuleConfig config)
         {
-            float width = config.GetSetting("WindowWidth", windowSize.x);
-            float height = config.GetSetting("WindowHeight", windowSize.y);
+            float width = config.GetSetting("WindowWidth", windowSize.X);
+            float height = config.GetSetting("WindowHeight", windowSize.Y);
             windowSize = new Vector2(width, height);
 
             columnWidths[0] = config.GetSetting("Column0Width", columnWidths[0]);

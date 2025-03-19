@@ -48,10 +48,12 @@ namespace Nyx.Core.Managers
 
 				File.WriteAllText(configFilePath, json);
 				ConsoleLogger.Log(LogType.Info, $"{LOG_PREFIX} Configuration saved to: {configFilePath}");
+				NotificationManager.AddNotification("ConfigManager", $"Configuration saved to: {configFilePath}.");
 			}
 			catch (Exception ex)
 			{
 				ConsoleLogger.Log(LogType.Error, $"{LOG_PREFIX} Failed to save configuration: {ex.Message}");
+				NotificationManager.AddNotification("ConfigManager", $"Failed to save configuration: {ex.Message}.");
 			}
 		}
 
