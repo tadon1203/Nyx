@@ -81,10 +81,7 @@ namespace Nyx.Modules.Visual
         public ESP() : base("ESP", "Highlights nearby objects.", ModuleCategory.Visual) { }
 
         public override void OnUpdate()
-        {
-            if (!IsEnabled || Networking.LocalPlayer == null) 
-                return;
-                
+        {           
             var tempPlayerData = new Dictionary<VRCPlayerApi, PlayerESPData>();
             Camera camera = Camera.main;
             Vector3 cameraPosition = camera.transform.position;
@@ -206,11 +203,6 @@ namespace Nyx.Modules.Visual
                 if (player == null || !data.IsVisible)
                     continue;
                 
-                if (show2DBoxes)
-                {
-                    Draw2DBox(data.DisplayName, data.ScreenPosition, data.Distance, drawList);
-                }
-                
                 if (show3DBoxes && data.BoxCorners != null)
                 {
                     Draw3DBox(data.BoxCorners, drawList);
@@ -218,7 +210,12 @@ namespace Nyx.Modules.Visual
                 
                 if (showBoneESP && data.BoneScreenPositions != null && data.BoneScreenPositions.Count > 0)
                 {
-                    DrawBoneESP(data.BoneScreenPositions, drawList);
+                    DrawBoneESP(data.BoneScreenPositions, drawList, data.Distance);
+                }
+
+                if (show2DBoxes)
+                {
+                    Draw2DBox(data.DisplayName, data.ScreenPosition, data.Distance, drawList);
                 }
             }
         }
@@ -230,12 +227,12 @@ namespace Nyx.Modules.Visual
             boxWidth = Mathf.Clamp(boxWidth, 20f, 60f);
             boxHeight = Mathf.Clamp(boxHeight, 40f, 120f);
             
-            Vector2 boxMin = new Vector2(pos.x - boxWidth / 2, pos.y - boxHeight / 2);
-            Vector2 boxMax = new Vector2(pos.x + boxWidth / 2, pos.y + boxHeight / 2);
+            Vector2 boxMin = new Vector2(pos.x - boxWidth / 2, pos.y - boxHeight);
+            Vector2 boxMax = new Vector2(pos.x + boxWidth / 2, pos.y);
             
             uint boxColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, 1.0f).ToSystem());
             uint outlineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.0f, 0.0f, 0.0f, 1.0f).ToSystem());
-        
+
             float outlineThickness = 1.0f;
 
             drawList.AddRect(
@@ -275,7 +272,7 @@ namespace Nyx.Modules.Visual
             ];
 
             uint lineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, 1.0f).ToSystem());
-            uint fillColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, 0.2f).ToSystem());
+            uint fillColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, 0.1f).ToSystem());
 
             foreach (int[] edge in edges)
             {
@@ -314,13 +311,16 @@ namespace Nyx.Modules.Visual
             }
         }
         
-        private void DrawBoneESP(Dictionary<HumanBodyBones, Vector2> bonePositions, ImDrawListPtr drawList)
+        private void DrawBoneESP(Dictionary<HumanBodyBones, Vector2> bonePositions, ImDrawListPtr drawList, float distance)
         {
             uint jointColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.0f, 0.5f, 1.0f, 1.0f).ToSystem());
             
+            float circleRadius = 3.0f / (distance * 0.1f);
+            circleRadius = Mathf.Clamp(circleRadius, 2.0f, 5.0f);
+            
             foreach (var bone in bonePositions)
             {
-                drawList.AddCircleFilled(bone.Value.ToSystem(), 3.0f, jointColor);
+                drawList.AddCircleFilled(bone.Value.ToSystem(), circleRadius, jointColor);
             }
             
             uint lineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 1.0f, 1.0f, 1.0f).ToSystem());
@@ -334,7 +334,6 @@ namespace Nyx.Modules.Visual
                 }
             }
         }
-
         public void SaveModuleConfig(ModuleConfig config)
 		{
 			config.SetSetting("Show2DBoxes", show2DBoxes);

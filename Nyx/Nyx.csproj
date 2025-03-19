@@ -22,6 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>External\Game\Assembly-CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="DearImGuiInjection">
       <HintPath>External\DearImGuiInjection\DearImGuiInjection.dll</HintPath>
     </Reference>
@@ -42,6 +45,9 @@
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>External\Game\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="VRCCore-Standalone">
+      <HintPath>External\Game\VRCCore-Standalone.dll</HintPath>
     </Reference>
     <Reference Include="VRCSDKBase">
       <HintPath>External\Game\VRCSDKBase.dll</HintPath>
