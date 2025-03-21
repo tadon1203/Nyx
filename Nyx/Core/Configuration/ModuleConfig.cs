@@ -33,7 +33,7 @@ namespace Nyx.Core.Configuration
 				}
 				catch (Exception)
 				{
-					ConsoleLogger.Log(LogType.Warning, $"設定キー '{key}' の型変換に失敗しました。デフォルト値 '{defaultValue}' を使用します。");
+					ConsoleLogger.Log(LogType.Warning, $"Failed to convert the type of setting key '{key}'. Using the default value '{defaultValue}'.");
 				}
 			}
 			return defaultValue;

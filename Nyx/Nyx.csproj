@@ -34,6 +34,9 @@
     <Reference Include="ImGui.NET">
       <HintPath>External\DearImGuiInjection\ImGui.NET.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>External\Game\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AnimationModule">
       <HintPath>External\Game\UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
