@@ -26,6 +26,10 @@ namespace Nyx.Modules.Visual
         private bool showNavMeshAgents = true;
         private bool showPickups = true;
 
+        private float playerMaxDistance = 300.0f;
+        private float navMeshAgentMaxDistance = 300.0f;
+        private float pickupMaxDistance = 100.0f;
+
         private System.Numerics.Vector4 playerBoxColor = new(1.0f, 1.0f, 1.0f, 1.0f);
         private System.Numerics.Vector4 playerTextColor = new(1.0f, 1.0f, 1.0f, 1.0f);
         private System.Numerics.Vector4 boneJointColor = new(0.0f, 0.5f, 1.0f, 1.0f);
@@ -160,6 +164,10 @@ namespace Nyx.Modules.Visual
                 if (player != null && !player.isLocal)
                 {
                     Vector3 position = player.GetPosition();
+                    float distance = Vector3.Distance(cameraPosition, position);
+                    if (playerMaxDistance > 0 && distance > playerMaxDistance)
+                        continue;
+
                     float height = player.GetAvatarEyeHeightAsMeters();
                     float width = height * 0.5f;
                     float depth = width;
@@ -169,8 +177,6 @@ namespace Nyx.Modules.Visual
                     Bounds bounds = new Bounds(center, size);
                     
                     Vector3 screenPos = camera.WorldToScreenPoint(position);
-                    
-                    float distance = Vector3.Distance(cameraPosition, position);
                     
                     PlayerESPData data = new PlayerESPData
                     {
@@ -246,6 +252,10 @@ namespace Nyx.Modules.Visual
                     if (agent != null)
                     {
                         Vector3 position = agent.transform.position;
+                        float distance = Vector3.Distance(cameraPosition, position);
+                        if (navMeshAgentMaxDistance > 0 && distance > navMeshAgentMaxDistance)
+                            continue;
+
                         float height = agent.height;
                         float radius = agent.radius;
                         
@@ -254,7 +264,6 @@ namespace Nyx.Modules.Visual
                         Bounds bounds = new Bounds(center, size);
                         
                         Vector3 screenPos = camera.WorldToScreenPoint(position);
-                        float distance = Vector3.Distance(cameraPosition, position);
                         
                         NavMeshAgentData data = new NavMeshAgentData
                         {
@@ -307,6 +316,11 @@ namespace Nyx.Modules.Visual
                     if (pickup != null)
                     {
                         Vector3 position = pickup.transform.position;
+                        float distance = Vector3.Distance(cameraPosition, position);
+                        if (pickupMaxDistance > 0 && distance > pickupMaxDistance)
+                            continue;
+
+                        
                         float size = pickup.GetComponent<Collider>()?.bounds.size.magnitude ?? 0.5f;
                         
                         Vector3 boundSize = new Vector3(size, size, size);
@@ -314,7 +328,6 @@ namespace Nyx.Modules.Visual
                         Bounds bounds = new Bounds(center, boundSize);
                         
                         Vector3 screenPos = camera.WorldToScreenPoint(position);
-                        float distance = Vector3.Distance(cameraPosition, position);
                         
                         string holderName = "";
                         bool isHeld = false;
@@ -332,7 +345,7 @@ namespace Nyx.Modules.Visual
                         
                         PickupData data = new PickupData
                         {
-                            Name = pickup.gameObject.name,
+                            Name = $"{pickup.gameObject.name } | {pickup.InteractionText}",
                             Position = position,
                             Distance = distance,
                             IsVisible = screenPos.z > 0,
