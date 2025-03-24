@@ -71,10 +71,45 @@ namespace Nyx.Core.Managers
             HumanBodyBones.RightFoot
         };
 
+        public static Dictionary<VRCPlayerApi, PlayerData> GetPlayerData()
+        {
+            lock (_lock)
+            {
+                return new(playerData);
+            }
+        }
+
+        public static List<NavMeshAgentData> GetNavMeshAgentData()
+        {
+            lock (_lock)
+            {
+                return new(navMeshAgentData);
+            }
+        }
+
+        public static List<PickupData> GetPickupData()
+        {
+            lock (_lock)
+            {
+                return new(pickupData);
+            }
+        }
+
+        public static void Update()
+        {
+            timeSinceLastUpdate += Time.deltaTime;
+            if (timeSinceLastUpdate >= updateInterval)
+            {
+                UpdateObjectLists();
+                timeSinceLastUpdate = 0.0f;
+            }
+            UpdateData();
+        }
+
         private static void UpdateObjectLists()
         {
-            navMeshAgents = new List<NavMeshAgent>(Object.FindObjectsOfType<NavMeshAgent>());
-            pickups = new List<VRC_Pickup>(Object.FindObjectsOfType<VRC_Pickup>());
+            navMeshAgents = new(Object.FindObjectsOfType<NavMeshAgent>());
+            pickups = new(Object.FindObjectsOfType<VRC_Pickup>());
         }
 
         private static void UpdateData()
@@ -208,7 +243,75 @@ namespace Nyx.Core.Managers
                 }
             }
 
-            
+            foreach (var pickup in pickups)
+            {
+                Vector3 position = pickup.transform.position;
+                float distance = Vector3.Distance(cameraPosition, position);
+                        
+                float size = pickup.GetComponent<Collider>()?.bounds.size.magnitude ?? 0.5f;
+                        
+                Vector3 boundSize = new Vector3(size, size, size);
+                Vector3 center = position;
+                Bounds bounds = new Bounds(center, boundSize);
+                        
+                Vector3 screenPos = camera.WorldToScreenPoint(position);
+                        
+                string holderName = "";
+                bool isHeld = false;
+                        
+                foreach (var playerEntry in tempPlayerData)
+                {
+                    VRCPlayerApi player = playerEntry.Key;
+                    if (player != null && pickup.currentPlayer == player)
+                    {
+                        holderName = player.displayName;
+                        isHeld = true;
+                        break;
+                    }
+                }
+
+                Vector2[] screenCorners = new Vector2[8];
+                Vector3[] corners = new Vector3[]
+                {
+                    new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
+                    new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
+                    new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
+                    new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
+                    new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
+                    new Vector3(bounds.max.x, bounds.max.y, bounds.min.z), 
+                    new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
+                    new Vector3(bounds.min.x, bounds.max.y, bounds.max.z)
+                };
+                
+                for (int i = 0; i < 8; i++)
+                {
+                    Vector3 cornerScreenPos = camera.WorldToScreenPoint(corners[i]);
+                    screenCorners[i] = cornerScreenPos.z > 0 
+                        ? new Vector2(cornerScreenPos.x, Screen.height - cornerScreenPos.y) 
+                        : new Vector2(-1000, -1000);
+                }
+                
+                PickupData data = new PickupData
+                {
+                    Name = $"{pickup.gameObject.name } | {pickup.InteractionText}",
+                    Position = position,
+                    Distance = distance,
+                    IsVisible = screenPos.z > 0,
+                    ScreenPosition = screenPos.z > 0 ? new Vector2(screenPos.x, Screen.height - screenPos.y) : Vector2.zero,
+                    BoxCorners = screenCorners,
+                    IsHeld = isHeld,
+                    HolderName = holderName,
+                    Size = size
+                }; 
+                tempPickupData.Add(data);     
+            }
+
+            lock (_lock)
+            {
+                playerData = tempPlayerData;
+                navMeshAgentData = tempNavMeshData;
+                pickupData = tempPickupData;
+            }
         }
     }
 }

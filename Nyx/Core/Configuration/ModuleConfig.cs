@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace Nyx.Core.Configuration
@@ -29,6 +30,24 @@ namespace Nyx.Core.Configuration
 			{
 				try
 				{
+					if (typeof(T) == typeof(System.Numerics.Vector4))
+					{
+						valueStr = valueStr.Trim('(', ')', '<', '>');
+						var parts = valueStr.Split(',');
+						if (parts.Length == 4 &&
+							float.TryParse(parts[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float x) &&
+							float.TryParse(parts[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float y) &&
+							float.TryParse(parts[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float z) &&
+							float.TryParse(parts[3].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float w))
+						{
+							var vector = new System.Numerics.Vector4(x, y, z, w);
+							return (T)(object)vector;
+						}
+						else
+						{
+							throw new FormatException("Invalid Vector4 format.");
+						}
+					}
 					return (T)Convert.ChangeType(valueStr, typeof(T));
 				}
 				catch (Exception)

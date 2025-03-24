@@ -1,25 +1,15 @@
 using System.Collections.Generic;
 using ImGuiNET;
 using Nyx.Core.Configuration;
+using Nyx.Core.Game;
 using Nyx.Core.Managers;
 using UnityEngine;
-using UnityEngine.AI;
 using VRC.SDKBase;
 
 namespace Nyx.Modules.Visual
 {
     public class ESP : ModuleBase, IConfigurableModule
-    {
-        private Dictionary<VRCPlayerApi, PlayerESPData> playerData = new();
-        private List<NavMeshAgentData> navMeshAgentData = new();
-        private List<PickupData> pickupData = new();
-        private readonly object _lock = new();
-
-        private List<NavMeshAgent> navMeshAgents = new();
-        private List<VRC_Pickup> pickups = new();
-        private float updateInterval = 1.0f;
-        private float timeSinceLastUpdate = 0.0f;
-        
+    {        
         private bool show2DBoxes = true;
         private bool show3DBoxes = true;
         private bool showBoneESP = true;
@@ -91,308 +81,8 @@ namespace Nyx.Modules.Visual
             HumanBodyBones.RightLowerLeg,
             HumanBodyBones.RightFoot
         };
-        
-        private class PlayerESPData
-        {
-            public string DisplayName;
-            public float Distance;
-            public bool IsVisible;
-            public Vector2 ScreenPosition;
-            public Vector2[] BoxCorners;
-            public Dictionary<HumanBodyBones, Vector2> BoneScreenPositions;
-        }
-        
-        private class NavMeshAgentData
-        {
-            public string Name;
-            public Vector3 Position;
-            public float Distance;
-            public bool IsVisible;
-            public Vector2 ScreenPosition;
-            public Vector2[] BoxCorners;
-            public bool IsActive;
-            public Vector3 Destination;
-            public float Radius;
-            public float Height;
-        }
-
-        private class PickupData
-        {
-            public string Name;
-            public Vector3 Position;
-            public float Distance;
-            public bool IsVisible;
-            public Vector2 ScreenPosition;
-            public Vector2[] BoxCorners;
-            public bool IsHeld;
-            public string HolderName;
-            public float Size;
-        }
 
         public ESP() : base("ESP", "Highlights nearby objects and agents.", ModuleCategory.Visual) { }
-
-        public override void OnEnable()
-        {
-            UpdateNavMeshAgents();
-            UpdatePickups();
-        }
-
-        public override void OnDisable()
-        {
-            navMeshAgents.Clear();
-            pickups.Clear();
-        }
-
-        public override void OnUpdate()
-        {           
-            var tempPlayerData = new Dictionary<VRCPlayerApi, PlayerESPData>();
-            var tempNavMeshData = new List<NavMeshAgentData>();
-            var tempPickupData = new List<PickupData>();
-            Camera camera = Camera.main;
-            Vector3 cameraPosition = camera.transform.position;
-
-            timeSinceLastUpdate += Time.deltaTime;
-            if (timeSinceLastUpdate >= updateInterval)
-            {
-                UpdateNavMeshAgents();
-                UpdatePickups();
-                timeSinceLastUpdate = 0.0f;
-            }
-            
-            foreach (var player in VRCPlayerApi.AllPlayers)
-            {
-                if (player != null && !player.isLocal)
-                {
-                    Vector3 position = player.GetPosition();
-                    float distance = Vector3.Distance(cameraPosition, position);
-                    if (playerMaxDistance > 0 && distance > playerMaxDistance)
-                        continue;
-
-                    float height = player.GetAvatarEyeHeightAsMeters();
-                    float width = height * 0.5f;
-                    float depth = width;
-
-                    Vector3 size = new Vector3(width, height, depth);
-                    Vector3 center = position + new Vector3(0, height * 0.5f, 0);
-                    Bounds bounds = new Bounds(center, size);
-                    
-                    Vector3 screenPos = camera.WorldToScreenPoint(position);
-                    
-                    PlayerESPData data = new PlayerESPData
-                    {
-                        DisplayName = player.displayName,
-                        Distance = distance,
-                        IsVisible = screenPos.z > 0,
-                        ScreenPosition = screenPos.z > 0 ? new Vector2(screenPos.x, Screen.height - screenPos.y) : Vector2.zero
-                    };
-                    
-                    if (show2DBoxes || show3DBoxes)
-                    {
-                        Vector2[] screenCorners = new Vector2[8];
-                        Vector3[] corners = new Vector3[]
-                        {
-                            new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
-                            new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
-                            new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
-                            new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
-                            new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
-                            new Vector3(bounds.max.x, bounds.max.y, bounds.min.z), 
-                            new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
-                            new Vector3(bounds.min.x, bounds.max.y, bounds.max.z)
-                        };
-                        
-                        for (int i = 0; i < 8; i++)
-                        {
-                            Vector3 cornerScreenPos = camera.WorldToScreenPoint(corners[i]);
-                            screenCorners[i] = cornerScreenPos.z > 0 
-                                ? new Vector2(cornerScreenPos.x, Screen.height - cornerScreenPos.y) 
-                                : new Vector2(-1000, -1000);
-                        }
-                        
-                        data.BoxCorners = screenCorners;
-                    }
-                    
-                    if (showBoneESP)
-                    {
-                        data.BoneScreenPositions = new Dictionary<HumanBodyBones, Vector2>();
-                        
-                        foreach (HumanBodyBones bone in mainBones)
-                        {
-                            try
-                            {
-                                Transform boneTransform = player.GetBoneTransform(bone);
-                                if (boneTransform != null)
-                                {
-                                    Vector3 boneWorldPos = boneTransform.position;
-                                    Vector3 boneScreenPos = camera.WorldToScreenPoint(boneWorldPos);
-                                    
-                                    if (boneScreenPos.z > 0)
-                                    {
-                                        data.BoneScreenPositions[bone] = new Vector2(boneScreenPos.x, Screen.height - boneScreenPos.y);
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                
-                            }
-                        }
-                    }
-                    
-                    tempPlayerData[player] = data;
-                }
-            }
-            
-            if (showNavMeshAgents)
-            {
-                NavMeshAgent[] allAgents = UnityEngine.Object.FindObjectsOfType<NavMeshAgent>();
-                
-                foreach (var agent in allAgents)
-                {
-                    if (agent != null)
-                    {
-                        Vector3 position = agent.transform.position;
-                        float distance = Vector3.Distance(cameraPosition, position);
-                        if (navMeshAgentMaxDistance > 0 && distance > navMeshAgentMaxDistance)
-                            continue;
-
-                        float height = agent.height;
-                        float radius = agent.radius;
-                        
-                        Vector3 size = new Vector3(radius * 2f, height, radius * 2f);
-                        Vector3 center = position + new Vector3(0, height * 0.5f, 0);
-                        Bounds bounds = new Bounds(center, size);
-                        
-                        Vector3 screenPos = camera.WorldToScreenPoint(position);
-                        
-                        NavMeshAgentData data = new NavMeshAgentData
-                        {
-                            Name = agent.gameObject.name,
-                            Position = position,
-                            Distance = distance,
-                            IsVisible = screenPos.z > 0,
-                            ScreenPosition = screenPos.z > 0 ? new Vector2(screenPos.x, Screen.height - screenPos.y) : Vector2.zero,
-                            IsActive = agent.isActiveAndEnabled && agent.isOnNavMesh,
-                            Destination = agent.destination,
-                            Radius = radius,
-                            Height = height
-                        };
-                        
-                        if (show2DBoxes || show3DBoxes)
-                        {
-                            Vector2[] screenCorners = new Vector2[8];
-                            Vector3[] corners = new Vector3[]
-                            {
-                                new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
-                                new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
-                                new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
-                                new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
-                                new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
-                                new Vector3(bounds.max.x, bounds.max.y, bounds.min.z), 
-                                new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
-                                new Vector3(bounds.min.x, bounds.max.y, bounds.max.z)
-                            };
-                            
-                            for (int i = 0; i < 8; i++)
-                            {
-                                Vector3 cornerScreenPos = camera.WorldToScreenPoint(corners[i]);
-                                screenCorners[i] = cornerScreenPos.z > 0 
-                                    ? new Vector2(cornerScreenPos.x, Screen.height - cornerScreenPos.y) 
-                                    : new Vector2(-1000, -1000);
-                            }
-                            
-                            data.BoxCorners = screenCorners;
-                        }
-                        
-                        tempNavMeshData.Add(data);
-                    }
-                }
-            }
-
-            if (showPickups)
-            {    
-                foreach (var pickup in pickups)
-                {
-                    if (pickup != null)
-                    {
-                        Vector3 position = pickup.transform.position;
-                        float distance = Vector3.Distance(cameraPosition, position);
-                        if (pickupMaxDistance > 0 && distance > pickupMaxDistance)
-                            continue;
-
-                        
-                        float size = pickup.GetComponent<Collider>()?.bounds.size.magnitude ?? 0.5f;
-                        
-                        Vector3 boundSize = new Vector3(size, size, size);
-                        Vector3 center = position;
-                        Bounds bounds = new Bounds(center, boundSize);
-                        
-                        Vector3 screenPos = camera.WorldToScreenPoint(position);
-                        
-                        string holderName = "";
-                        bool isHeld = false;
-                        
-                        foreach (var playerEntry in tempPlayerData)
-                        {
-                            VRCPlayerApi player = playerEntry.Key;
-                            if (player != null && pickup.currentPlayer == player)
-                            {
-                                holderName = player.displayName;
-                                isHeld = true;
-                                break;
-                            }
-                        }
-                        
-                        PickupData data = new PickupData
-                        {
-                            Name = $"{pickup.gameObject.name } | {pickup.InteractionText}",
-                            Position = position,
-                            Distance = distance,
-                            IsVisible = screenPos.z > 0,
-                            ScreenPosition = screenPos.z > 0 ? new Vector2(screenPos.x, Screen.height - screenPos.y) : Vector2.zero,
-                            IsHeld = isHeld,
-                            HolderName = holderName,
-                            Size = size
-                        };
-                        
-                        if (show2DBoxes || show3DBoxes)
-                        {
-                            Vector2[] screenCorners = new Vector2[8];
-                            Vector3[] corners = new Vector3[]
-                            {
-                                new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
-                                new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
-                                new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
-                                new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
-                                new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
-                                new Vector3(bounds.max.x, bounds.max.y, bounds.min.z), 
-                                new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
-                                new Vector3(bounds.min.x, bounds.max.y, bounds.max.z)
-                            };
-                            
-                            for (int i = 0; i < 8; i++)
-                            {
-                                Vector3 cornerScreenPos = camera.WorldToScreenPoint(corners[i]);
-                                screenCorners[i] = cornerScreenPos.z > 0 
-                                    ? new Vector2(cornerScreenPos.x, Screen.height - cornerScreenPos.y) 
-                                    : new Vector2(-1000, -1000);
-                            }
-                            
-                            data.BoxCorners = screenCorners;
-                        }
-                        
-                        tempPickupData.Add(data);
-                    }
-                }
-            }
-
-            lock (_lock)
-            {
-                playerData = tempPlayerData;
-                navMeshAgentData = tempNavMeshData;
-                pickupData = tempPickupData;
-            } 
-        }
 
         public override void OnMenu()
         {
@@ -414,39 +104,38 @@ namespace Nyx.Modules.Visual
             ImGui.ColorEdit4("NavMeshAgent Path Color", ref navMeshAgentPathColor);
             ImGui.ColorEdit4("Pickup Held Color", ref pickupHeldColor);
             ImGui.ColorEdit4("Pickup Available Color", ref pickupAvailableColor);
+
+            ImGui.Separator();
+            ImGui.Text("Distance Settings");
+            ImGui.SliderFloat("Player Max Distance", ref playerMaxDistance, 0.0f, 1000.0f);
+            ImGui.SliderFloat("NavMeshAgent Max Distance", ref navMeshAgentMaxDistance, 0.0f, 1000.0f);
+            ImGui.SliderFloat("Pickup Max Distance", ref pickupMaxDistance, 0.0f, 1000.0f);
         }
 
         public override void OnImGuiRender()
         {
-            if (!IsEnabled || Networking.LocalPlayer == null) 
+            if (!IsEnabled || Networking.LocalPlayer == null)
                 return;
 
-            Dictionary<VRCPlayerApi, PlayerESPData> localPlayerData;
-            List<NavMeshAgentData> localNavMeshData;
-            List<PickupData> localPickupData;
-            
-            lock (_lock)
-            {
-                localPlayerData = new(playerData);
-                localNavMeshData = new(navMeshAgentData);
-                localPickupData = new(pickupData);
-            }
+            var localPlayerData = ObjectDataManager.GetPlayerData();
+            var localNavMeshData = ObjectDataManager.GetNavMeshAgentData();
+            var localPickupData = ObjectDataManager.GetPickupData();
 
             ImDrawListPtr drawList = ImGui.GetBackgroundDrawList();
-        
+
             foreach (var playerEntry in localPlayerData)
             {
                 VRCPlayerApi player = playerEntry.Key;
-                PlayerESPData data = playerEntry.Value;
-                
-                if (player == null || !data.IsVisible)
+                PlayerData data = playerEntry.Value;
+
+                if (player == null || !data.IsVisible || data.Distance > playerMaxDistance)
                     continue;
-                
+
                 if (show3DBoxes && data.BoxCorners != null)
                 {
                     Draw3DBox(data.BoxCorners, drawList);
                 }
-                
+
                 if (showBoneESP && data.BoneScreenPositions != null && data.BoneScreenPositions.Count > 0)
                 {
                     DrawBoneESP(data.BoneScreenPositions, drawList, data.Distance);
@@ -457,18 +146,18 @@ namespace Nyx.Modules.Visual
                     Draw2DBox(data.DisplayName, data.ScreenPosition, data.Distance, drawList);
                 }
             }
-            
+
             if (showNavMeshAgents)
             {
                 foreach (var agent in localNavMeshData)
                 {
-                    if (!agent.IsVisible)
+                    if (!agent.IsVisible || agent.Distance > navMeshAgentMaxDistance)
                         continue;
-                    
+
                     uint agentColor = agent.IsActive
                         ? ImGui.ColorConvertFloat4ToU32(navMeshAgentActiveColor)
                         : ImGui.ColorConvertFloat4ToU32(navMeshAgentInactiveColor);
-                    
+
                     if (show3DBoxes && agent.BoxCorners != null)
                     {
                         Draw3DBoxForAgent(agent.BoxCorners, drawList, agentColor);
@@ -478,11 +167,6 @@ namespace Nyx.Modules.Visual
                     {
                         DrawAgentBox(agent, drawList, agentColor);
                     }
-                    
-                    if (agent.IsActive)
-                    {
-                        DrawAgentPath(agent, drawList);
-                    }
                 }
             }
 
@@ -490,13 +174,13 @@ namespace Nyx.Modules.Visual
             {
                 foreach (var pickup in localPickupData)
                 {
-                    if (!pickup.IsVisible)
+                    if (!pickup.IsVisible || pickup.Distance > pickupMaxDistance)
                         continue;
-                    
+
                     uint pickupColor = pickup.IsHeld
                         ? ImGui.ColorConvertFloat4ToU32(pickupHeldColor)
                         : ImGui.ColorConvertFloat4ToU32(pickupAvailableColor);
-                    
+
                     if (show3DBoxes && pickup.BoxCorners != null)
                     {
                         Draw3DBoxForPickup(pickup.BoxCorners, drawList, pickupColor);
@@ -510,17 +194,6 @@ namespace Nyx.Modules.Visual
             }
         }
 
-        private void UpdateNavMeshAgents()
-        {
-            navMeshAgents = new(UnityEngine.Object.FindObjectsOfType<NavMeshAgent>());
-        }
-
-        private void UpdatePickups()
-        {
-            pickups = new(UnityEngine.Object.FindObjectsOfType<VRC_Pickup>());
-        }
-
-        // This can be the same as Draw3DBoxForAgent
         private void Draw3DBoxForPickup(Vector2[] screenCorners, ImDrawListPtr drawList, uint color)
         {
             int[][] edges =
@@ -861,6 +534,10 @@ namespace Nyx.Modules.Visual
             config.SetSetting("NavMeshAgentPathColor", navMeshAgentPathColor);
             config.SetSetting("PickupHeldColor", pickupHeldColor);
             config.SetSetting("PickupAvailableColor", pickupAvailableColor);
+
+            config.SetSetting("PlayerMaxDistance", playerMaxDistance);
+            config.SetSetting("NavMeshAgentMaxDistance", navMeshAgentMaxDistance);
+            config.SetSetting("PickupMaxDistance", pickupMaxDistance);
         }
 
         public void LoadModuleConfig(ModuleConfig config)
@@ -880,6 +557,10 @@ namespace Nyx.Modules.Visual
             navMeshAgentPathColor = config.GetSetting("NavMeshAgentPathColor", navMeshAgentPathColor);
             pickupHeldColor = config.GetSetting("PickupHeldColor", pickupHeldColor);
             pickupAvailableColor = config.GetSetting("PickupAvailableColor", pickupAvailableColor);
+
+            playerMaxDistance = config.GetSetting("PlayerMaxDistance", playerMaxDistance);
+            navMeshAgentMaxDistance = config.GetSetting("NavMeshAgentMaxDistance", navMeshAgentMaxDistance);
+            pickupMaxDistance = config.GetSetting("PickupMaxDistance", pickupMaxDistance);
         }
     }
 }

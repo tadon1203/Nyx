@@ -5,6 +5,7 @@ using Nyx.Core;
 using Nyx.Core.Managers;
 using Nyx.Patching;
 using UnityEngine;
+using VRC.SDKBase;
 
 namespace Nyx
 {
@@ -31,6 +32,10 @@ namespace Nyx
         {
             ModuleManager.Update();
             NotificationManager.Update(Time.deltaTime);
+            if (Networking.LocalPlayer != null)
+            {
+                ObjectDataManager.Update();
+            }
         }
     }
 }
