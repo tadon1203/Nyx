@@ -5,37 +5,30 @@ using Nyx.Core;
 using Nyx.Core.Managers;
 using Nyx.Patching;
 using UnityEngine;
-using VRC.SDKBase;
 
-namespace Nyx
+namespace Nyx;
+
+[BepInPlugin("Nyx", "Nyx", "1.0.0")]
+public class Plugin : BasePlugin
 {
-    [BepInPlugin("Nyx", "Nyx", "1.0.0")]
-    public class Plugin : BasePlugin
+    public override void Load()
     {
-        public override void Load()
-        {
-            ConsoleLogger.Init();
-            HarmonyPatcher.ApplyPatches();
-            AddComponent<UnityMainThreadDispatcher>();
-            DearImGuiInjection.DearImGuiInjection.Render += ModuleManager.Render;
-            DearImGuiInjection.DearImGuiInjection.Render += NotificationManager.Render;
-			ConfigManager.LoadConfig();
-            AddComponent<MainMonoBehaviour>();
-        }
+        ConsoleLogger.Init();
+        HarmonyPatcher.ApplyPatches();
+        AddComponent<UnityMainThreadDispatcher>();
+        DearImGuiInjection.DearImGuiInjection.Render += ModuleManager.Render;
+        DearImGuiInjection.DearImGuiInjection.Render += NotificationManager.Render;
+        ConfigManager.LoadConfig();
+        AddComponent<MainMonoBehaviour>();
     }
+}
 
-    public class MainMonoBehaviour : MonoBehaviour
+public class MainMonoBehaviour(IntPtr handle) : MonoBehaviour(handle)
+{
+    private void Update()
     {
-        public MainMonoBehaviour(IntPtr handle) : base(handle) { }
-
-		private void Update()
-        {
-            ModuleManager.Update();
-            NotificationManager.Update(Time.deltaTime);
-            if (Networking.LocalPlayer != null)
-            {
-                ObjectDataManager.Update();
-            }
-        }
+        SDK.SDK.Update();
+        ModuleManager.Update();
+        NotificationManager.Update(Time.deltaTime);
     }
 }

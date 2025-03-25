@@ -4,54 +4,53 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Nyx.Core.Utils
+namespace Nyx.Core.Utils;
+
+public class UnityMainThreadDispatcher : MonoBehaviour
 {
-	public class UnityMainThreadDispatcher : MonoBehaviour
+	private static readonly Queue<Action> ExecutionQueue = new();
+	private static UnityMainThreadDispatcher _instance;
+
+	private void Awake()
 	{
-		private static readonly Queue<Action> executionQueue = new();
-		private static UnityMainThreadDispatcher instance;
+		_instance = this;
+	}
 
-		private void Awake()
-		{
-			instance = this;
-		}
+	private void OnDestroy()
+	{
+		_instance = null;
+	}
 
-		private void OnDestroy()
+	private void Update()
+	{
+		lock (ExecutionQueue)
 		{
-			instance = null;
-		}
-
-		private void Update()
-		{
-			lock (executionQueue)
+			while (ExecutionQueue.Count > 0)
 			{
-				while (executionQueue.Count > 0)
-				{
-					executionQueue.Dequeue().Invoke();
-				}
+				ExecutionQueue.Dequeue().Invoke();
 			}
 		}
+	}
 
-		public static void Enqueue(IEnumerator action)
+	public static void Enqueue(IEnumerator action)
+	{
+		lock (ExecutionQueue)
 		{
-			lock (executionQueue)
+			ExecutionQueue.Enqueue(() =>
 			{
-				executionQueue.Enqueue(() =>
-				{
-					instance.StartCoroutine(action.WrapToIl2Cpp());
-				});
-			}
+				_instance.StartCoroutine(action.WrapToIl2Cpp());
+			});
 		}
+	}
 
-		public static void Enqueue(Action action)
-		{
-			Enqueue(ActionWrapper(action));
-		}
+	public static void Enqueue(Action action)
+	{
+		Enqueue(ActionWrapper(action));
+	}
 		
-		private static IEnumerator ActionWrapper(Action action)
-		{
-			action();
-			yield return null;
-		}
+	private static IEnumerator ActionWrapper(Action action)
+	{
+		action();
+		yield return null;
 	}
 }

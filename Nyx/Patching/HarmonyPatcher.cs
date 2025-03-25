@@ -1,24 +1,22 @@
 ﻿using HarmonyLib;
 using System.Reflection;
 using Nyx.Core;
-using System.Linq;
 
-namespace Nyx.Patching
+namespace Nyx.Patching;
+
+public static class HarmonyPatcher
 {
-	public static class HarmonyPatcher
-	{
-		private static Harmony harmony;
+	private static Harmony _harmony;
 
-		public static void ApplyPatches()
+	public static void ApplyPatches()
+	{
+		if (_harmony == null)
 		{
-			if (harmony == null)
-            {
-                harmony = new Harmony("Nyx");
+			_harmony = new Harmony("Nyx");
                 
-                var assembly = Assembly.GetExecutingAssembly();              
-                harmony.PatchAll(assembly);
-                ConsoleLogger.Log(LogType.Info, "[HarmonyPatcher] All patches applied successfully.");
-            }
+			var assembly = Assembly.GetExecutingAssembly();              
+			_harmony.PatchAll(assembly);
+			ConsoleLogger.Log(LogType.Info, "[HarmonyPatcher] All patches applied successfully.");
 		}
 	}
 }

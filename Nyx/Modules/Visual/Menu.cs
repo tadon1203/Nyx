@@ -5,139 +5,166 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-namespace Nyx.Modules.Visual
+namespace Nyx.Modules.Visual;
+
+public class Menu : ModuleBase
 {
-    public class Menu : ModuleBase
+    private Vector2 _windowSize = new(600, 500);
+    private ModuleBase _selectedModule = null;
+    private Dictionary<ModuleCategory, bool> _categoryExpanded;
+    private ModuleCategory _selectedCategory;
+
+    public Menu() : base("Menu", "Shows a menu.", ModuleCategory.Visual, UnityEngine.KeyCode.Insert)
     {
-        private Vector2 windowSize = new(600, 500);
-        private ModuleBase selectedModule = null;
-        private Dictionary<ModuleCategory, bool> categoryExpanded;
+        _categoryExpanded = Enum.GetValues(typeof(ModuleCategory))
+            .Cast<ModuleCategory>()
+            .ToDictionary(c => c, c => true);
+        
+        _selectedCategory = _categoryExpanded.Keys.First();
+    }
 
-        public Menu() : base("Menu", "Shows a menu.", ModuleCategory.Visual, UnityEngine.KeyCode.Insert)
+    public override void OnImGuiRender()
+    {
+        if (!IsEnabled) return;
+
+        ImGui.SetNextWindowSize(_windowSize, ImGuiCond.Once);
+        if (ImGui.Begin("Nyx"))
         {
-            categoryExpanded = Enum.GetValues(typeof(ModuleCategory))
-                .Cast<ModuleCategory>()
-                .ToDictionary(c => c, c => true);
-        }
-
-        public override void OnImGuiRender()
-        {
-            if (!IsEnabled) return;
-
-            ImGui.SetNextWindowSize(windowSize, ImGuiCond.Once);
-            if (ImGui.Begin("Nyx"))
+            if (ImGui.Button("Save config"))
             {
-                if (ImGui.Button("Save config"))
-                {
-                    ConfigManager.SaveConfig();
-                }
-                ImGui.SameLine();
-                if (ImGui.Button("Load config"))
-                {
-                    ConfigManager.LoadConfig();
-                }
-
-                windowSize = ImGui.GetWindowSize();
-                RenderModules();
-
-                if (selectedModule != null)
-                {
-                    ImGui.Separator();
-                    RenderModuleSettings();
-                }
-
-                ImGui.End();
+                ConfigManager.SaveConfig();
             }
-        }
-
-        private void RenderModules()
-        {
-            var modulesByCategory = ModuleManager.GetAllModules().GroupBy(m => m.Category);
-            foreach (var group in modulesByCategory)
-            {
-                ImGui.Text($"{group.Key}");
-                ImGui.Separator();
-
-                foreach (var module in group)
-                {
-                    if (ImGui.Selectable(module.Name, selectedModule == module))
-                        selectedModule = selectedModule == module ? null : module;
-                }
-                ImGui.NewLine();
-            }
-        }
-
-        private void RenderModuleSettings()
-        {
-            ImGui.Text($"{selectedModule.Name} Settings");
-
-            ImGui.PushID($"{selectedModule.Name}_toggle");
-            bool isEnabled = selectedModule.IsEnabled;
-            if (ImGui.Checkbox(selectedModule.Name, ref isEnabled))
-            {
-                selectedModule.Toggle();
-            }
-            ImGui.PopID();
-
-            ImGui.Text(selectedModule.Description);
-            ImGui.Text(selectedModule.Category.ToString());
-            ImGui.Separator();
-            RenderHotkeySelector();
-            ImGui.Separator();
-            selectedModule.OnMenu();
-        }
-
-        private void RenderHotkeySelector()
-        {
-            if (selectedModule == null)
-                return;
-
-            UnityEngine.KeyCode currentKey = selectedModule.ToggleKey;
-            string currentKeyName = currentKey == UnityEngine.KeyCode.None ? "None" : currentKey.ToString();
-
-            ImGui.Text("Toggle Key:");
             ImGui.SameLine();
-            ImGui.SetNextItemWidth(200);
-            if (ImGui.BeginCombo("##toggleKey", currentKeyName))
+            if (ImGui.Button("Load config"))
             {
-                if (ImGui.Selectable("None", currentKey == UnityEngine.KeyCode.None))
-                    selectedModule.SetToggleKey(UnityEngine.KeyCode.None);
+                ConfigManager.LoadConfig();
+            }
 
-                foreach (char c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-                {
-                    UnityEngine.KeyCode key = (UnityEngine.KeyCode)Enum.Parse(typeof(UnityEngine.KeyCode), c.ToString());
-                    if (ImGui.Selectable(key.ToString(), selectedModule.ToggleKey == key))
-                        selectedModule.SetToggleKey(key);
-                }
+            _windowSize = ImGui.GetWindowSize();
+            
+            RenderCategoryTabs();
+            
+            RenderModulesForSelectedCategory();
 
-                ImGui.EndCombo();
+            if (_selectedModule != null)
+            {
+                ImGui.Separator();
+                RenderModuleSettings();
+            }
+
+            ImGui.End();
+        }
+    }
+
+    private void RenderCategoryTabs()
+    {
+        var categories = ModuleManager.GetAllModules()
+            .Select(m => m.Category)
+            .Distinct()
+            .OrderBy(c => c.ToString())
+            .ToList();
+
+        ImGui.BeginTabBar("ModuleCategoryTabs");
+        
+        foreach (var category in categories)
+        {
+            if (ImGui.BeginTabItem(category.ToString()))
+            {
+                _selectedCategory = category;
+                ImGui.EndTabItem();
             }
         }
+        
+        ImGui.EndTabBar();
+    }
 
-        public override void OnEnable()
-        {
-            if (ImGui.GetCurrentContext() == IntPtr.Zero)
-                return;
-            EnableCursor();
-        }
+    private void RenderModulesForSelectedCategory()
+    {
+        var modulesInCategory = ModuleManager.GetAllModules()
+            .Where(m => m.Category == _selectedCategory)
+            .ToList();
 
-        public override void OnDisable()
+        ImGui.BeginChild("ModuleList", new Vector2(ImGui.GetContentRegionAvail().X, 300));
+        
+        foreach (var module in modulesInCategory)
         {
-            if (ImGui.GetCurrentContext() == IntPtr.Zero)
-                return;
-            DisableCursor();
+            if (ImGui.Selectable(module.Name, _selectedModule == module))
+                _selectedModule = _selectedModule == module ? null : module;
         }
+        
+        ImGui.EndChild();
+    }
+    
+    private void RenderModuleSettings()
+    {
+        ImGui.Text($"{_selectedModule.Name} Settings");
 
-        private void EnableCursor()
+        ImGui.PushID($"{_selectedModule.Name}_toggle");
+        bool isEnabled = _selectedModule.IsEnabled;
+        if (ImGui.Checkbox(_selectedModule.Name, ref isEnabled))
         {
-            DearImGuiInjection.DearImGuiInjection.IsCursorVisible = true;
-            ImGui.GetIO().MouseDrawCursor = true;
+            _selectedModule.Toggle();
         }
+        ImGui.PopID();
 
-        private void DisableCursor()
+        ImGui.Text(_selectedModule.Description);
+        ImGui.Text(_selectedModule.Category.ToString());
+        ImGui.Separator();
+        RenderHotkeySelector();
+        ImGui.Separator();
+        _selectedModule.OnMenu();
+    }
+
+    private void RenderHotkeySelector()
+    {
+        if (_selectedModule == null)
+            return;
+
+        UnityEngine.KeyCode currentKey = _selectedModule.ToggleKey;
+        string currentKeyName = currentKey == UnityEngine.KeyCode.None ? "None" : currentKey.ToString();
+
+        ImGui.Text("Toggle Key:");
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(200);
+        if (ImGui.BeginCombo("##toggleKey", currentKeyName))
         {
-            DearImGuiInjection.DearImGuiInjection.IsCursorVisible = false;
-            ImGui.GetIO().MouseDrawCursor = false;
+            if (ImGui.Selectable("None", currentKey == UnityEngine.KeyCode.None))
+                _selectedModule.SetToggleKey(UnityEngine.KeyCode.None);
+
+            foreach (char c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+            {
+                UnityEngine.KeyCode key = (UnityEngine.KeyCode)Enum.Parse(typeof(UnityEngine.KeyCode), c.ToString());
+                if (ImGui.Selectable(key.ToString(), _selectedModule.ToggleKey == key))
+                    _selectedModule.SetToggleKey(key);
+            }
+
+            ImGui.EndCombo();
         }
+    }
+    
+    public override void OnEnable()
+    {
+        if (ImGui.GetCurrentContext() == IntPtr.Zero)
+            return;
+        EnableCursor();
+    }
+
+    public override void OnDisable()
+    {
+        if (ImGui.GetCurrentContext() == IntPtr.Zero)
+            return;
+        DisableCursor();
+    }
+
+    private void EnableCursor()
+    {
+        DearImGuiInjection.DearImGuiInjection.IsCursorVisible = true;
+        ImGui.GetIO().MouseDrawCursor = true;
+    }
+
+    private void DisableCursor()
+    {
+        DearImGuiInjection.DearImGuiInjection.IsCursorVisible = false;
+        ImGui.GetIO().MouseDrawCursor = false;
     }
 }

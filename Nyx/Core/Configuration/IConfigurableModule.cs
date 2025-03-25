@@ -1,8 +1,7 @@
-﻿namespace Nyx.Core.Configuration
+﻿namespace Nyx.Core.Configuration;
+
+public interface IConfigurableModule
 {
-	public interface IConfigurableModule
-	{
-		void SaveModuleConfig(ModuleConfig config);
-		void LoadModuleConfig(ModuleConfig config);
-	}
+	void SaveModuleConfig(ModuleConfig config);
+	void LoadModuleConfig(ModuleConfig config);
 }
