@@ -8,14 +8,14 @@ public static class BoundsUtils
     {
         Vector3[] corners =
         [
-            new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
-            new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
-            new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
-            new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
-            new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
-            new Vector3(bounds.max.x, bounds.max.y, bounds.min.z),
-            new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
-            new Vector3(bounds.min.x, bounds.max.y, bounds.max.z)
+            new(bounds.min.x, bounds.min.y, bounds.min.z),
+            new(bounds.max.x, bounds.min.y, bounds.min.z),
+            new(bounds.max.x, bounds.min.y, bounds.max.z),
+            new(bounds.min.x, bounds.min.y, bounds.max.z),
+            new(bounds.min.x, bounds.max.y, bounds.min.z),
+            new(bounds.max.x, bounds.max.y, bounds.min.z),
+            new(bounds.max.x, bounds.max.y, bounds.max.z),
+            new(bounds.min.x, bounds.max.y, bounds.max.z)
         ];
 
         SysVec2[] screenCorners = new SysVec2[8];
