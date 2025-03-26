@@ -16,32 +16,32 @@ public class Flight() : ModuleBase("Flight", "Allows you to fly.", ModuleCategor
 
 		if (Input.GetKey(KeyCode.W))
 		{
-			transform.position += transform.forward * _speed * Time.deltaTime;
+			transform.position += transform.forward * (_speed * Time.deltaTime);
 		}
 
 		if (Input.GetKey(KeyCode.S))
 		{
-			transform.position -= transform.forward * _speed * Time.deltaTime;
+			transform.position -= transform.forward * (_speed * Time.deltaTime);
 		}
 
 		if (Input.GetKey(KeyCode.A))
 		{
-			transform.position -= transform.right * _speed * Time.deltaTime;
+			transform.position -= transform.right * (_speed * Time.deltaTime);
 		}
 
 		if (Input.GetKey(KeyCode.D))
 		{
-			transform.position += transform.right * _speed * Time.deltaTime;
+			transform.position += transform.right * (_speed * Time.deltaTime);
 		}
 
 		if (Input.GetKey(KeyCode.Space))
 		{
-			transform.position += transform.up * _speed * Time.deltaTime;
+			transform.position += transform.up * (_speed * Time.deltaTime);
 		}
 
 		if (Input.GetKey(KeyCode.LeftShift))
 		{
-			transform.position -= transform.up * _speed * Time.deltaTime;
+			transform.position -= transform.up * (_speed * Time.deltaTime);
 		}
 
 		Networking.LocalPlayer.SetVelocity(Vector3.zero);

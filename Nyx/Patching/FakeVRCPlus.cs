@@ -4,10 +4,11 @@ using VRC.Core;
 
 namespace Nyx.Patching;
 
-[HarmonyPatch(typeof(ObjectPublicStBoStDaBo1StILBo1Unique), nameof(ObjectPublicStBoStDaBo1StILBo1Unique.Method_Public_Static_ApiVRChatSubscription_0))]
-class FakeVrcPlusPatch
+public class FakeVrcPlusPatch
 {
-    static void Postfix(ref ApiVRChatSubscription __result)
+    [HarmonyPatch(typeof(ObjectPublicStBoStDaBo1StILBo1Unique), nameof(ObjectPublicStBoStDaBo1StILBo1Unique.Method_Public_Static_ApiVRChatSubscription_0))]
+    [HarmonyPrefix]
+    public static void Postfix(ref ApiVRChatSubscription __result)
     {
         if (__result != null)
             return;

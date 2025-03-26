@@ -83,9 +83,6 @@ public static class ConfigManager
 				return;
 			}
 
-			int loadedModules = 0;
-			int failedModules = 0;
-
 			foreach (var config in data.Modules)
 			{
 				var module = ModuleManager.GetAllModules().FirstOrDefault(m => m.Name == config.ModuleName);
@@ -112,13 +109,11 @@ public static class ConfigManager
 						{
 							configurableModule.LoadModuleConfig(config);
 						}
-
-						loadedModules++;
+						
 						ConsoleLogger.Log(LogType.Debug, $"{LOGPrefix} Module configuration loaded: {module.Name}");
 					}
 					catch (Exception ex)
 					{
-						failedModules++;
 						ConsoleLogger.Log(LogType.Warning, $"{LOGPrefix} Error applying configuration to module '{module.Name}': {ex.Message}");
 					}
 				}

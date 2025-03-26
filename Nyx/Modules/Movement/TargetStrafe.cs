@@ -13,7 +13,7 @@ public class TargetStrafe()
     private VRCPlayerApi _target;
     private float _strafeSpeed = 2.0f;
     private float _strafeRadius = 2.0f;
-    private float _currentAngle = 0.0f;
+    private float _currentAngle;
 
     public override void OnUpdate()
     {

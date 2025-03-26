@@ -6,7 +6,7 @@ namespace Nyx.SDK;
 public static class SDK
 {
     private const float UpdateInterval = 1.0f;
-    private static float _timeSinceLastUpdate = 0.0f;
+    private static float _timeSinceLastUpdate;
     
     public static void Update()
     {

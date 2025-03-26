@@ -1,7 +1,6 @@
 ﻿using ImGuiNET;
 using Nyx.Core.Managers;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -10,17 +9,12 @@ namespace Nyx.Modules.Visual;
 public class Menu : ModuleBase
 {
     private Vector2 _windowSize = new(600, 500);
-    private ModuleBase _selectedModule = null;
-    private Dictionary<ModuleCategory, bool> _categoryExpanded;
+    private ModuleBase _selectedModule;
     private ModuleCategory _selectedCategory;
 
     public Menu() : base("Menu", "Shows a menu.", ModuleCategory.Visual, UnityEngine.KeyCode.Insert)
     {
-        _categoryExpanded = Enum.GetValues(typeof(ModuleCategory))
-            .Cast<ModuleCategory>()
-            .ToDictionary(c => c, c => true);
-        
-        _selectedCategory = _categoryExpanded.Keys.First();
+        _selectedCategory = ModuleCategory.Visual;
     }
 
     public override void OnImGuiRender()
@@ -156,13 +150,13 @@ public class Menu : ModuleBase
         DisableCursor();
     }
 
-    private void EnableCursor()
+    private static void EnableCursor()
     {
         DearImGuiInjection.DearImGuiInjection.IsCursorVisible = true;
         ImGui.GetIO().MouseDrawCursor = true;
     }
 
-    private void DisableCursor()
+    private static void DisableCursor()
     {
         DearImGuiInjection.DearImGuiInjection.IsCursorVisible = false;
         ImGui.GetIO().MouseDrawCursor = false;
