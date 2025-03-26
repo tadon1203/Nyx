@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Nyx.Core.Utils;
 using Nyx.SDK.Constants;
 using Nyx.SDK.Utils;
 using UnityEngine;
@@ -44,7 +43,7 @@ public static class PlayerManager
             Bounds bounds = new(center, size);
             
             Vector3 screenPosRaw = camera.WorldToScreenPoint(position);
-            Vector2 screenPos = ScreenPosUtils.GetScreenPositionSafe(screenPosRaw);
+            SysVec2 screenPos = ScreenPosUtils.GetScreenPositionSafe(screenPosRaw);
             
             var data = new NyxPlayer
             {
@@ -53,7 +52,7 @@ public static class PlayerManager
                 IsVisible = screenPosRaw.z > 0,
                 ScreenPosition = screenPos,
                 BoxCorners = BoundsUtils.CalculateScreenCorners(camera, bounds),
-                BoneScreenPositions = new Dictionary<HumanBodyBones, Vec2>(),
+                BoneScreenPositions = new Dictionary<HumanBodyBones, SysVec2>(),
             };
 
             foreach (HumanBodyBones bone in BoneConstants.MainBones)

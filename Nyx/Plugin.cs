@@ -1,6 +1,6 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepInEx.Unity.IL2CPP;
-using System;
 using Nyx.Core;
 using Nyx.Core.Managers;
 using Nyx.Patching;
@@ -18,7 +18,7 @@ public class Plugin : BasePlugin
         AddComponent<UnityMainThreadDispatcher>();
         DearImGuiInjection.DearImGuiInjection.Render += ModuleManager.Render;
         DearImGuiInjection.DearImGuiInjection.Render += NotificationManager.Render;
-        ConfigManager.LoadConfig();
+        SettingsManager.LoadSettings();
         AddComponent<MainMonoBehaviour>();
     }
 }

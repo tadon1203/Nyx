@@ -1,3 +1,6 @@
+using Nyx.SDK.Navigation;
+using Nyx.SDK.Pickups;
+using Nyx.SDK.Players;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -16,12 +19,12 @@ public static class SDK
         _timeSinceLastUpdate += Time.deltaTime;
         if (_timeSinceLastUpdate >= UpdateInterval)
         {
-            Navigation.NavMeshManager.UpdateObjectList();
-            Pickups.PickupManager.UpdateObjectList();
+            NavMeshManager.UpdateObjectList();
+            PickupManager.UpdateObjectList();
             _timeSinceLastUpdate = 0.0f;
         }
-        Players.PlayerManager.Update();
-        Navigation.NavMeshManager.Update();
-        Pickups.PickupManager.Update();
+        PlayerManager.Update();
+        NavMeshManager.Update();
+        PickupManager.Update();
     }
 }

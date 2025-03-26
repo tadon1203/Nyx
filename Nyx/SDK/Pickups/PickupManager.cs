@@ -45,7 +45,7 @@ public static class PickupManager
             Bounds bounds = new(position, boundSize);
 
             Vector3 screenPosRaw = camera.WorldToScreenPoint(position);
-            Vector2 screenPos = ScreenPosUtils.GetScreenPositionSafe(screenPosRaw);
+            SysVec2 screenPos = ScreenPosUtils.GetScreenPositionSafe(screenPosRaw);
             
             var data = new NyxPickup
             {

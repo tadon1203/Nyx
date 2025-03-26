@@ -1,96 +1,101 @@
-using System.Numerics;
 using ImGuiNET;
-using Nyx.Core.Configuration;
-using Nyx.Core.Utils;
+using Nyx.Core.Settings;
 using Nyx.SDK.Navigation;
 using Nyx.SDK.Pickups;
 using Nyx.SDK.Players;
 using VRC.SDKBase;
 
-// ReSharper disable InconsistentNaming
-
 namespace Nyx.Modules.Visual;
 
-public class ThreeDimensionalESP() : ModuleBase("3D ESP", "Renders 3D wireframe boxes through walls.", ModuleCategory.Visual), IConfigurableModule
+public class ThreeDimensionalESP : ModuleBase
 {
-    private bool _isEnabled = true;
-    private bool _showPlayerBoxes = true;
-    private bool _showNavMeshAgentBoxes = true;
-    private bool _showPickupBoxes = true;
-
+    [FloatSetting("Max Distance", "Maximum display distance", 300.0f, 0.0f, 1000.0f)]
     private float _maxDistance = 300.0f;
 
-    private Vector4 _playerBoxColor = new(1.0f, 1.0f, 1.0f, 1.0f);
-    private Vector4 _navMeshAgentActiveColor = new(1.0f, 0.0f, 0.0f, 1.0f);
-    private Vector4 _pickupAvailableColor = new(0.0f, 0.8f, 0.2f, 1.0f);
+    [Setting("Player Boxes", "Show player boxes", "true")]
+    private bool _showPlayerBoxes = true;
 
-    public override void OnMenu()
+    [Setting("NavMesh Agents", "Show NavMesh agents", "true")]
+    private bool _showNavMeshAgentBoxes = true;
+
+    [Setting("Pickups", "Show pickup items", "true")]
+    private bool _showPickupBoxes = true;
+
+    [Setting("Player Color", "Player color", "1.0,1.0,1.0,1.0", typeof(SysVec4))]
+    private SysVec4 _playerBoxColor = new(1.0f, 1.0f, 1.0f, 1.0f);
+
+    [Setting("Agent Color", "NavMesh agent color", "1.0,0.0,0.0,1.0", typeof(SysVec4))]
+    private SysVec4 _navMeshAgentActiveColor = new(1.0f, 0.0f, 0.0f, 1.0f);
+
+    [Setting("Pickup Color", "Pickup color", "0.0,0.8,0.2,1.0", typeof(SysVec4))]
+    private SysVec4 _pickupAvailableColor = new(0.0f, 0.8f, 0.2f, 1.0f);
+
+    [FloatSetting("Fill Opacity", "Opacity of the box fill", 0.1f, 0.0f, 1.0f)]
+    private float _fillOpacity = 0.1f;
+
+    [FloatSetting("Line Thickness", "Thickness of the lines", 1.0f, 0.5f, 2.0f)]
+    private float _lineThickness = 1.0f;
+
+    public ThreeDimensionalESP() : base("3D ESP", "Renders 3D wireframe boxes through walls.", ModuleCategory.Visual) 
     {
-        ImGui.Checkbox("Enabled", ref _isEnabled);
-        ImGui.Checkbox("Show Player Boxes", ref _showPlayerBoxes);
-        ImGui.Checkbox("Show NavMesh Agent Boxes", ref _showNavMeshAgentBoxes);
-        ImGui.Checkbox("Show Pickup Boxes", ref _showPickupBoxes);
-
-        ImGui.Separator();
-        ImGui.Text("Color Settings");
-        ImGui.ColorEdit4("Player Box Color", ref _playerBoxColor);
-        ImGui.ColorEdit4("NavMeshAgent Active Color", ref _navMeshAgentActiveColor);
-        ImGui.ColorEdit4("Pickup Available Color", ref _pickupAvailableColor);
-
-        ImGui.Separator();
-        ImGui.Text("Distance Settings");
-        ImGui.SliderFloat("Max Distance", ref _maxDistance, 0.0f, 1000.0f);
+        RegisterSettings();
     }
 
     public override void OnImGuiRender()
     {
-        if (!_isEnabled || Networking.LocalPlayer == null)
+        if (Networking.LocalPlayer == null)
             return;
 
-        var localPlayerData = PlayerManager.GetPlayerData();
-        var localNavMeshData = NavMeshManager.GetAgentData();
-        var localPickupData = PickupManager.GetPickupData();
-
-        ImDrawListPtr drawList = ImGui.GetBackgroundDrawList();
-
+        var drawList = ImGui.GetBackgroundDrawList();
+        
         if (_showPlayerBoxes)
-        {
-            foreach (var playerEntry in localPlayerData)
+        { 
+            uint playerColor = ImGui.ColorConvertFloat4ToU32(_playerBoxColor);
+            foreach (var playerEntry in PlayerManager.GetPlayerData())
             {
-                VRCPlayerApi player = playerEntry.Key;
-                NyxPlayer data = playerEntry.Value;
-
-                if (player == null || !data.IsVisible || data.Distance > _maxDistance || data.BoxCorners == null)
-                    continue;
-
-                Draw3DBox(drawList, data.BoxCorners, ImGui.ColorConvertFloat4ToU32(_playerBoxColor));
+                if (playerEntry.Value != null && 
+                    playerEntry.Value.IsVisible && 
+                    playerEntry.Value.Distance <= _maxDistance && 
+                    playerEntry.Value.BoxCorners != null)
+                { 
+                    Draw3DBox(drawList, playerEntry.Value.BoxCorners, playerColor);
+                }
             }
         }
+
 
         if (_showNavMeshAgentBoxes)
         {
-            foreach (var agent in localNavMeshData)
+            uint agentColor = ImGui.ColorConvertFloat4ToU32(_navMeshAgentActiveColor);
+            foreach (var agent in NavMeshManager.GetAgentData())
             {
-                if (!agent.IsVisible || agent.Distance > _maxDistance || agent.BoxCorners == null)
-                    continue;
-
-                Draw3DBox(drawList, agent.BoxCorners, ImGui.ColorConvertFloat4ToU32(_navMeshAgentActiveColor));
+                if (agent != null && 
+                    agent.IsVisible && 
+                    agent.Distance <= _maxDistance && 
+                    agent.BoxCorners != null)
+                {
+                    Draw3DBox(drawList, agent.BoxCorners, agentColor);
+                }
             }
         }
-
+            
         if (_showPickupBoxes)
         {
-            foreach (var pickup in localPickupData)
+            uint pickupColor = ImGui.ColorConvertFloat4ToU32(_pickupAvailableColor);
+            foreach (var pickup in PickupManager.GetPickupData())
             {
-                if (!pickup.IsVisible || pickup.Distance > _maxDistance || pickup.BoxCorners == null)
-                    continue;
-
-                Draw3DBox(drawList, pickup.BoxCorners, ImGui.ColorConvertFloat4ToU32(_pickupAvailableColor));
+                if (pickup != null && 
+                    pickup.IsVisible && 
+                    pickup.Distance <= _maxDistance && 
+                    pickup.BoxCorners != null)
+                {
+                    Draw3DBox(drawList, pickup.BoxCorners, pickupColor);
+                }
             }
         }
     }
-
-    private void Draw3DBox(ImDrawListPtr drawList, Vec2[] screenCorners, uint color)
+    
+    private void Draw3DBox(ImDrawListPtr drawList, SysVec2[] screenCorners, uint color)
     {
         int[][] edges =
         [
@@ -99,11 +104,11 @@ public class ThreeDimensionalESP() : ModuleBase("3D ESP", "Renders 3D wireframe 
             [0, 4], [1, 5], [2, 6], [3, 7]
         ];
 
-        uint fillColor = ImGui.ColorConvertFloat4ToU32(new Vector4(
+        uint fillColor = ImGui.ColorConvertFloat4ToU32(new SysVec4(
             ImGui.ColorConvertU32ToFloat4(color).X,
             ImGui.ColorConvertU32ToFloat4(color).Y,
-            ImGui.ColorConvertU32ToFloat4(color).Z,
-            0.1f));
+            ImGui.ColorConvertU32ToFloat4(color).Z, 
+            _fillOpacity));
 
         foreach (int[] edge in edges)
         {
@@ -112,7 +117,7 @@ public class ThreeDimensionalESP() : ModuleBase("3D ESP", "Renders 3D wireframe 
 
             if (screenCorners[a].X > -999 && screenCorners[b].X > -999)
             {
-                drawList.AddLine(screenCorners[a], screenCorners[b], color, 1.0f);
+                drawList.AddLine(screenCorners[a], screenCorners[b], color, _lineThickness);
             }
         }
 
@@ -140,33 +145,5 @@ public class ThreeDimensionalESP() : ModuleBase("3D ESP", "Renders 3D wireframe 
                 );
             }
         }
-    }
-
-    public void SaveModuleConfig(ModuleConfig config)
-    {
-        config.SetSetting("Enabled", _isEnabled);
-        config.SetSetting("ShowPlayerBoxes", _showPlayerBoxes);
-        config.SetSetting("ShowNavMeshAgentBoxes", _showNavMeshAgentBoxes);
-        config.SetSetting("ShowPickupBoxes", _showPickupBoxes);
-
-        config.SetSetting("PlayerBoxColor", _playerBoxColor);
-        config.SetSetting("NavMeshAgentActiveColor", _navMeshAgentActiveColor);
-        config.SetSetting("PickupAvailableColor", _pickupAvailableColor);
-
-        config.SetSetting("MaxDistance", _maxDistance);
-    }
-
-    public void LoadModuleConfig(ModuleConfig config)
-    {
-        _isEnabled = config.GetSetting("Enabled", _isEnabled);
-        _showPlayerBoxes = config.GetSetting("ShowPlayerBoxes", _showPlayerBoxes);
-        _showNavMeshAgentBoxes = config.GetSetting("ShowNavMeshAgentBoxes", _showNavMeshAgentBoxes);
-        _showPickupBoxes = config.GetSetting("ShowPickupBoxes", _showPickupBoxes);
-
-        _playerBoxColor = config.GetSetting("PlayerBoxColor", _playerBoxColor);
-        _navMeshAgentActiveColor = config.GetSetting("NavMeshAgentActiveColor", _navMeshAgentActiveColor);
-        _pickupAvailableColor = config.GetSetting("PickupAvailableColor", _pickupAvailableColor);
-
-        _maxDistance = config.GetSetting("MaxDistance", _maxDistance);
     }
 }

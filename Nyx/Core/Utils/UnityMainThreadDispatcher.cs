@@ -1,7 +1,7 @@
-﻿using BepInEx.Unity.IL2CPP.Utils.Collections;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using BepInEx.Unity.IL2CPP.Utils.Collections;
 using UnityEngine;
 
 namespace Nyx.Core.Utils;

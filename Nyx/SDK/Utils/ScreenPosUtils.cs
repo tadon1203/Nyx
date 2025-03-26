@@ -2,12 +2,12 @@ using UnityEngine;
 
 namespace Nyx.SDK.Utils;
 
-public class ScreenPosUtils
+public static class ScreenPosUtils
 {
-    public static Vector2 GetScreenPositionSafe(Vector3 screenPosRaw)
+    public static SysVec2 GetScreenPositionSafe(UnityVec3 screenPosRaw)
     {
         return screenPosRaw.z > 0
-            ? new Vector2(screenPosRaw.x, Screen.height - screenPosRaw.y)
-            : Vector2.zero;
+            ? new SysVec2(screenPosRaw.x, Screen.height - screenPosRaw.y)
+            : SysVec2.Zero;
     }
 }

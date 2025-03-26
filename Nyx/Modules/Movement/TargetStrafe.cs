@@ -1,126 +1,149 @@
 using ImGuiNET;
-using Nyx.Core.Configuration;
-using Nyx.Core.Utils;
+using Nyx.Core.Settings;
 using UnityEngine;
 using VRC.SDKBase;
+using Vector2 = System.Numerics.Vector2;
 
 namespace Nyx.Modules.Movement;
 
-public class TargetStrafe()
-    : ModuleBase("TargetStrafe", "Allows you to strafe around the player.", ModuleCategory.Movement),
-        IConfigurableModule
+public class TargetStrafe : ModuleBase
 {
-    private VRCPlayerApi _target;
+    [FloatSetting("Strafe Speed", "Orbit speed", 2.0f, 0.1f, 10.0f)]
     private float _strafeSpeed = 2.0f;
+
+    [FloatSetting("Strafe Radius", "Orbit radius", 2.0f, 0.5f, 5.0f)]
     private float _strafeRadius = 2.0f;
+
+    [Setting("Auto Height", "Automatically adjust height", "true")]
+    private bool _autoHeight = true;
+
+    [Setting("Look At Target", "Look at target", "true")]
+    private bool _lookAtTarget = true;
+
+    private VRCPlayerApi _target;
     private float _currentAngle;
+    private UnityVec3 _lastTargetPosition;
+
+    public TargetStrafe() : base("TargetStrafe", "Allows you to strafe around the player.", ModuleCategory.Movement)
+    {
+        RegisterSettings();
+    }
 
     public override void OnUpdate()
     {
-        if (_target != null)
+        if (!IsEnabled || _target == null || Networking.LocalPlayer == null) 
+            return;
+
+        UpdateStrafePosition();
+    }
+
+    private void UpdateStrafePosition()
+    {
+        var localPlayer = Networking.LocalPlayer;
+        var targetTransform = _target.gameObject.transform;
+        _lastTargetPosition = targetTransform.position;
+        
+        _currentAngle += _strafeSpeed * Time.deltaTime;
+        
+        Vector3 newPosition = CalculateStrafePosition(targetTransform, localPlayer);
+        
+        localPlayer.gameObject.transform.position = newPosition;
+        
+        if (_lookAtTarget)
         {
-            VRCPlayerApi localPlayer = Networking.LocalPlayer;
+            UpdatePlayerRotation(localPlayer, targetTransform.position, newPosition);
+        }
+    }
 
-            GameObject targetObject = _target.gameObject;
-            if (targetObject == null)
-                return;
+    private UnityVec3 CalculateStrafePosition(Transform targetTransform, VRCPlayerApi localPlayer)
+    {
+        float x = _lastTargetPosition.x + _strafeRadius * Mathf.Cos(_currentAngle);
+        float z = _lastTargetPosition.z + _strafeRadius * Mathf.Sin(_currentAngle);
+        float y = _autoHeight ? _lastTargetPosition.y : localPlayer.GetPosition().y;
+        
+        return new Vector3(x, y, z);
+    }
 
-            Vector3 targetPosition = targetObject.transform.position;
-
-            _currentAngle += _strafeSpeed * Time.deltaTime;
-            float x = targetPosition.x + _strafeRadius * Mathf.Cos(_currentAngle);
-            float z = targetPosition.z + _strafeRadius * Mathf.Sin(_currentAngle);
-
-            Vector3 newPosition = new Vector3(x, localPlayer.GetPosition().y, z);
-
-            localPlayer.gameObject.transform.position = newPosition;
-
-            Vector3 lookDirection = targetPosition - newPosition;
-            lookDirection.y = 0;
-            if (lookDirection != Vector3.zero)
-            {
-                Quaternion lookRotation = Quaternion.LookRotation(lookDirection);
-                localPlayer.gameObject.transform.rotation = lookRotation;
-            }
+    private void UpdatePlayerRotation(VRCPlayerApi player, Vector3 targetPos, Vector3 currentPos)
+    {
+        Vector3 lookDirection = targetPos - currentPos;
+        lookDirection.y = 0;
+        
+        if (lookDirection != Vector3.zero)
+        {
+            player.gameObject.transform.rotation = Quaternion.LookRotation(lookDirection);
         }
     }
 
     public override void OnEnable()
     {
-        if (Networking.LocalPlayer == null)
-            return;
-
-        Networking.LocalPlayer.gameObject.GetComponent<CharacterController>().enabled = false;
+        if (Networking.LocalPlayer == null) return;
+        
+        var controller = Networking.LocalPlayer.gameObject.GetComponent<CharacterController>();
+        if (controller != null) 
+        {
+            controller.enabled = false;
+        }
     }
 
     public override void OnDisable()
     {
-        if (Networking.LocalPlayer == null)
-            return;
-
-        Networking.LocalPlayer.gameObject.GetComponent<CharacterController>().enabled = true;
+        if (Networking.LocalPlayer == null) return;
+        
+        var controller = Networking.LocalPlayer.gameObject.GetComponent<CharacterController>();
+        if (controller != null) 
+        {
+            controller.enabled = true;
+        }
     }
 
-    public override void OnMenu()
+    public override void OnImGuiRender()
     {
-        float speed = _strafeSpeed;
-        if (ImGui.SliderFloat("Strafe Speed", ref speed, 0.5f, 10.0f, "%.1f"))
-        {
-            _strafeSpeed = speed;
-        }
+        if (!IsEnabled) return;
 
-        float radius = _strafeRadius;
-        if (ImGui.SliderFloat("Strafe Radius", ref radius, 0.0f, 10.0f, "%.1f"))
+        ImGui.Begin("Target Strafe Settings", ImGuiWindowFlags.AlwaysAutoResize);
         {
-            _strafeRadius = radius;
+            RenderPlayerSelection();
+            RenderStatusInfo();
         }
-            
-        ImGui.Separator();
+        ImGui.End();
+    }
+
+    private void RenderPlayerSelection()
+    {
         ImGui.Text("Select Target Player:");
-
-        if (Networking.LocalPlayer == null)
-            return;
-
-        if (ImGui.BeginListBox("##PlayerList", new Vec2(-1, 200)))
+        
+        if (ImGui.BeginListBox("##PlayerList", new Vector2(-1, 200)))
         {
             foreach (var player in VRCPlayerApi.AllPlayers)
             {
-                if (player.isLocal)
-                    continue;
-                    
+                if (player.isLocal) continue;
+                
                 bool isSelected = _target != null && _target.playerId == player.playerId;
-                string playerName = player.displayName;
-                    
-                if (ImGui.Selectable(playerName, isSelected))
+                if (ImGui.Selectable($"{player.displayName}##{player.playerId}", isSelected))
                 {
                     _target = player;
-                    Enable();
+                    _currentAngle = 0;
+                    _lastTargetPosition = player.GetPosition();
                 }
-                    
-                if (isSelected)
+                
+                if (isSelected) 
                     ImGui.SetItemDefaultFocus();
             }
             ImGui.EndListBox();
         }
-            
+    }
+
+    private void RenderStatusInfo()
+    {
         if (_target != null)
         {
-            ImGui.Text($"Current target: {_target.displayName}");
+            ImGui.TextColored(new SysVec4(0, 1, 0, 1), $"Target: {_target.displayName}");
+            ImGui.Text($"Distance: {Vector3.Distance(Networking.LocalPlayer.GetPosition(), _target.GetPosition()):F2}m");
         }
         else
         {
-            ImGui.TextColored(new System.Numerics.Vector4(1, 0.5f, 0.5f, 1), "No target selected");
+            ImGui.TextColored(new SysVec4(1, 0.5f, 0.5f, 1), "No target selected");
         }
-    }
-
-    public void SaveModuleConfig(ModuleConfig config)
-    {
-        config.SetSetting("Strafe speed", _strafeSpeed);
-        config.SetSetting("Strafe radius", _strafeRadius);
-    }
-    public void LoadModuleConfig(ModuleConfig config)
-    {
-        _strafeSpeed = config.GetSetting("Strafe speed", _strafeSpeed);
-        _strafeRadius = config.GetSetting("Strafe radius", _strafeRadius);
     }
 }

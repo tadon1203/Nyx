@@ -1,14 +1,18 @@
 using System;
 using HarmonyLib;
+using Il2CppSystem.Collections.Generic;
+using Nyx.Core;
 using VRC.Core;
+
+// ReSharper disable InconsistentNaming
 
 namespace Nyx.Patching;
 
-public class FakeVrcPlusPatch
+
+[HarmonyPatch(typeof(ObjectPublicStBoStDaBo1StILBo1Unique), nameof(ObjectPublicStBoStDaBo1StILBo1Unique.Method_Public_Static_ApiVRChatSubscription_0))]
+class FakeVRCPlusPatch
 {
-    [HarmonyPatch(typeof(ObjectPublicStBoStDaBo1StILBo1Unique), nameof(ObjectPublicStBoStDaBo1StILBo1Unique.Method_Public_Static_ApiVRChatSubscription_0))]
-    [HarmonyPrefix]
-    public static void Postfix(ref ApiVRChatSubscription __result)
+    static void Postfix(ref ApiVRChatSubscription __result)
     {
         if (__result != null)
             return;
@@ -34,7 +38,7 @@ public class FakeVrcPlusPatch
         result._isBulkGift_k__BackingField = false;
         result._giftedBy_k__BackingField = "";
         result._giftedByDisplayName_k__BackingField = "";
-        result._licenseGroups_k__BackingField = new Il2CppSystem.Collections.Generic.List<string>();
+        result._licenseGroups_k__BackingField = new List<string>();
                 
         result.transactionId = "txn_" + Guid.NewGuid();
         result.steamItemId = "4000";
@@ -53,7 +57,7 @@ public class FakeVrcPlusPatch
         result.isBulkGift = false;
         result.giftedBy = "";
         result.giftedByDisplayName = "";
-        result.licenseGroups = new Il2CppSystem.Collections.Generic.List<string>();
+        result.licenseGroups = new List<string>();
 
         __result = result;
     }

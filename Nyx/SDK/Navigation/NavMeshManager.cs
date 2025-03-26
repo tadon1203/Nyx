@@ -47,7 +47,7 @@ public static class NavMeshManager
             Bounds bounds = new(center, size);
             
             Vector3 screenPosRaw = camera.WorldToScreenPoint(position);
-            Vector2 screenPos = ScreenPosUtils.GetScreenPositionSafe(screenPosRaw);
+            SysVec2 screenPos = ScreenPosUtils.GetScreenPositionSafe(screenPosRaw);
 
             var data = new NyxNavMeshAgent
             {

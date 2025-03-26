@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Nyx.Core.Utils;
 using UnityEngine;
 
 namespace Nyx.SDK.Players;
@@ -9,9 +8,9 @@ public class NyxPlayer
     public string Name;
     public float Distance;
     public bool IsVisible;
-    public Vec2 ScreenPosition;
-    public Vec2[] BoxCorners;
-    public Dictionary<HumanBodyBones, Vec2> BoneScreenPositions;
+    public SysVec2 ScreenPosition;
+    public SysVec2[] BoxCorners;
+    public Dictionary<HumanBodyBones, SysVec2> BoneScreenPositions;
     
     public float GetHeight()
     {

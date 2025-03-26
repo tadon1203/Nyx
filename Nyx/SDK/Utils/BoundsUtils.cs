@@ -1,31 +1,30 @@
-using Nyx.Core.Utils;
 using UnityEngine;
 
 namespace Nyx.SDK.Utils;
 
 public static class BoundsUtils
 {
-    public static Vec2[] CalculateScreenCorners(Camera camera, Bounds bounds)
+    public static SysVec2[] CalculateScreenCorners(Camera camera, Bounds bounds)
     {
-        Vec3[] corners =
+        Vector3[] corners =
         [
-            new Vec3(bounds.min.x, bounds.min.y, bounds.min.z),
-            new Vec3(bounds.max.x, bounds.min.y, bounds.min.z),
-            new Vec3(bounds.max.x, bounds.min.y, bounds.max.z),
-            new Vec3(bounds.min.x, bounds.min.y, bounds.max.z),
-            new Vec3(bounds.min.x, bounds.max.y, bounds.min.z),
-            new Vec3(bounds.max.x, bounds.max.y, bounds.min.z),
-            new Vec3(bounds.max.x, bounds.max.y, bounds.max.z),
-            new Vec3(bounds.min.x, bounds.max.y, bounds.max.z)
+            new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
+            new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
+            new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
+            new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
+            new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
+            new Vector3(bounds.max.x, bounds.max.y, bounds.min.z),
+            new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
+            new Vector3(bounds.min.x, bounds.max.y, bounds.max.z)
         ];
 
-        Vec2[] screenCorners = new Vec2[8];
+        SysVec2[] screenCorners = new SysVec2[8];
         for (int i = 0; i < 8; i++)
         {
-            Vec3 screenPosRaw = camera.WorldToScreenPoint(corners[i]);
-            screenCorners[i] = screenPosRaw.Z > 0
-                ? new Vec2(screenPosRaw.X, Screen.height - screenPosRaw.Y)
-                : new Vec2(-1000, -1000);
+            Vector3 screenPosRaw = camera.WorldToScreenPoint(corners[i]);
+            screenCorners[i] = screenPosRaw.z > 0
+                ? new SysVec2(screenPosRaw.x, Screen.height - screenPosRaw.y)
+                : new SysVec2(-1000, -1000);
         }
         return screenCorners;
     }

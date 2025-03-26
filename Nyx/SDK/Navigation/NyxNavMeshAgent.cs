@@ -1,5 +1,3 @@
-using Nyx.Core.Utils;
-
 namespace Nyx.SDK.Navigation;
 
 public class NyxNavMeshAgent
@@ -7,8 +5,8 @@ public class NyxNavMeshAgent
     public string Name;
     public float Distance;
     public bool IsVisible;
-    public Vec2 ScreenPosition;
-    public Vec2[] BoxCorners;
+    public SysVec2 ScreenPosition;
+    public SysVec2[] BoxCorners;
     
     public float GetHeight()
     {
