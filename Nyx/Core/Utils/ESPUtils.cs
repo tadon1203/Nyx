@@ -16,22 +16,19 @@ public static class ESPUtils
 
         uint boxColorU32 = ImGui.ColorConvertFloat4ToU32(boxColor);
         uint outlineColorU32 = ImGui.ColorConvertFloat4ToU32(outlineColor);
-
-        // Outer outline
+        
         drawList.AddRect(
             new Vector2(boxMin.X - outlineThickness, boxMin.Y - outlineThickness),
             new Vector2(boxMax.X + outlineThickness, boxMax.Y + outlineThickness),
             outlineColorU32, 0.0f, ImDrawFlags.RoundCornersAll, outlineThickness
         );
-
-        // Inner outline
+        
         drawList.AddRect(
             new Vector2(boxMin.X + outlineThickness, boxMin.Y + outlineThickness),
             new Vector2(boxMax.X - outlineThickness, boxMax.Y - outlineThickness),
             outlineColorU32, 0.0f, ImDrawFlags.RoundCornersAll, outlineThickness
         );
-
-        // Main box
+        
         drawList.AddRect(boxMin, boxMax, boxColorU32, 0.0f, ImDrawFlags.RoundCornersAll, 1.0f);
     }
 }

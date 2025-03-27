@@ -1,6 +1,7 @@
 using ImGuiNET;
 using Nyx.Core.Settings;
 using Nyx.Core.Utils;
+using Nyx.SDK.Core;
 using VRC.SDKBase;
 
 namespace Nyx.Modules.Visual;
@@ -22,10 +23,10 @@ public class TwoDimensionalESP : ModuleBase
     private bool _showPickupBoxes = true;
 
     // Appearance Settings
-    [ColorSetting("Box Color", "Color of ESP boxes", "1.0,1.0,1.0,1.0")]
+    [Setting("Box Color", "Color of ESP boxes", "1.0,1.0,1.0,1.0")]
     private SysVec4 _boxColor = new(1.0f, 1.0f, 1.0f, 1.0f);
     
-    [ColorSetting("Outline Color", "Color of box outlines", "0.0,0.0,0.0,1.0")] 
+    [Setting("Outline Color", "Color of box outlines", "0.0,0.0,0.0,1.0")] 
     private SysVec4 _outlineColor = new(0.0f, 0.0f, 0.0f, 1.0f);
 
     public TwoDimensionalESP() : base("2D ESP", "Renders 2D boxes through walls.", ModuleCategory.Visual)
