@@ -83,6 +83,6 @@ public class TwoDimensionalESP : ModuleBase
 
     private bool ShouldRenderEntity(ObjectData entity)
     {
-        return entity.IsVisible && entity.Distance <= _maxDistance;
+        return ESPUtils.ShouldRenderEntity(entity, _maxDistance);
     }
 }

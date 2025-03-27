@@ -56,36 +56,24 @@ namespace Nyx.Modules.Visual
 
         private void DrawBoneEsp(ImDrawListPtr drawList, Dictionary<HumanBodyBones, SysVec2> bonePositions, float distance)
         {
+            float jointSize = Mathf.Clamp(_baseJointSize / (distance * 0.1f), 2.0f, 5.0f);
+
             if (_showJoints)
             {
-                uint jointColor = ImGui.ColorConvertFloat4ToU32(_boneJointColor);
-                float circleRadius = _baseJointSize / (distance * 0.1f);
-                circleRadius = Mathf.Clamp(circleRadius, 2.0f, 5.0f);
-
                 foreach (var bone in bonePositions)
                 {
-                    SysVec2 bonePos = bone.Value;
-                    if (bonePos.X > -999)
-                    {
-                        drawList.AddCircleFilled(bone.Value, circleRadius, jointColor);
-                    }
+                    ESPUtils.DrawJoint(drawList, bone.Value, _boneJointColor, jointSize);
                 }
             }
 
             if (_showBones)
             {
-                uint lineColor = ImGui.ColorConvertFloat4ToU32(_boneLineColor);
-
                 foreach (var connection in BoneConstants.BoneConnections)
                 {
                     if (bonePositions.TryGetValue(connection.Item1, out var start) && 
                         bonePositions.TryGetValue(connection.Item2, out var end))
                     {
-                        if (start.X > -999 || end.X > -999)
-                        {
-                            drawList.AddLine(start, end, lineColor, _lineThickness);
-                        }
-
+                        ESPUtils.DrawBone(drawList, start, end, _boneLineColor, _lineThickness);
                     }
                 }
             }

@@ -49,49 +49,38 @@ public class ThreeDimensionalESP : ModuleBase
         var drawList = ImGui.GetBackgroundDrawList();
         
         if (_showPlayerBoxes)
-        { 
-            uint playerColor = ImGui.ColorConvertFloat4ToU32(_playerBoxColor);
+        {
             foreach (var player in SDK.SDK.Players.ObjectsData)
             {
-                if (player.IsVisible && 
-                    player.Distance <= _maxDistance && 
-                    player.BoxCorners != null)
-                { 
-                    Draw3DBox(drawList, player.BoxCorners, playerColor);
+                if (ESPUtils.ShouldRenderEntity(player, _maxDistance) && player.BoxCorners != null)
+                {
+                    ESPUtils.Draw3DBox(drawList, player.BoxCorners, _playerBoxColor, _lineThickness, _fillOpacity);
                 }
             }
         }
         
         if (_showNavMeshAgentBoxes)
         {
-            uint agentColor = ImGui.ColorConvertFloat4ToU32(_navMeshAgentActiveColor);
             foreach (var agent in SDK.SDK.NavMeshAgents.ObjectsData)
             {
-                if (agent.IsVisible && 
-                    agent.Distance <= _maxDistance && 
-                    agent.BoxCorners != null)
+                if (ESPUtils.ShouldRenderEntity(agent, _maxDistance) && agent.BoxCorners != null)
                 {
-                    Draw3DBox(drawList, agent.BoxCorners, agentColor);
+                    ESPUtils.Draw3DBox(drawList, agent.BoxCorners, _navMeshAgentActiveColor, _lineThickness, _fillOpacity);
                 }
             }
         }
             
         if (_showPickupBoxes)
         {
-            uint pickupColor = ImGui.ColorConvertFloat4ToU32(_pickupAvailableColor);
             foreach (var pickup in SDK.SDK.Pickups.ObjectsData)
             {
-                if (pickup.IsVisible && 
-                    pickup.Distance <= _maxDistance && 
-                    pickup.BoxCorners != null)
+                if (ESPUtils.ShouldRenderEntity(pickup, _maxDistance) && pickup.BoxCorners != null)
                 {
-                    Draw3DBox(drawList, pickup.BoxCorners, pickupColor);
+                    ESPUtils.Draw3DBox(drawList, pickup.BoxCorners, _pickupAvailableColor, _lineThickness, _fillOpacity);
                 }
             }
         }
     }
-    
-    private void Draw3DBox(ImDrawListPtr drawList, SysVec2[] screenCorners, uint color)
     {
         int[][] edges =
         [
