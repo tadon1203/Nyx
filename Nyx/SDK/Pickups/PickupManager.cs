@@ -20,14 +20,14 @@ public class PickupManager : BaseManager<VRC_Pickup, PickupData>
         var bounds = collider?.bounds ?? new Bounds(position, Vector3.one * 0.5f);
         var camera = Camera.main;
 
-        return new PickupData
+        return new()
         {
             Name = pickup.gameObject.name,
             Distance = Vector3.Distance(camera.transform.position, position),
             ScreenPosition = ScreenUtils.WorldToScreenPoint(camera, position),
             BoxCorners = CalculateBoxCorners(camera, bounds),
             InteractionText = pickup.InteractionText,
-            OriginalReference = new WeakReference(pickup),
+            OriginalReference = new(pickup),
         };
     }
 }

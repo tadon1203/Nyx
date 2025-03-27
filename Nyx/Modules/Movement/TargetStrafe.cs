@@ -61,7 +61,7 @@ public class TargetStrafe : ModuleBase
         float z = _lastTargetPosition.z + _strafeRadius * Mathf.Sin(_currentAngle);
         float y = _autoHeight ? _lastTargetPosition.y : localPlayer.GetPosition().y;
         
-        return new Vector3(x, y, z);
+        return new(x, y, z);
     }
 
     private void UpdatePlayerRotation(VRCPlayerApi player, Vector3 targetPos, Vector3 currentPos)
@@ -113,7 +113,7 @@ public class TargetStrafe : ModuleBase
     {
         ImGui.Text("Select Target Player:");
         
-        if (ImGui.BeginListBox("##PlayerList", new Vector2(-1, 200)))
+        if (ImGui.BeginListBox("##PlayerList", new(-1, 200)))
         {
             foreach (var player in VRCPlayerApi.AllPlayers)
             {
@@ -138,12 +138,12 @@ public class TargetStrafe : ModuleBase
     {
         if (_target != null)
         {
-            ImGui.TextColored(new SysVec4(0, 1, 0, 1), $"Target: {_target.displayName}");
+            ImGui.TextColored(new(0, 1, 0, 1), $"Target: {_target.displayName}");
             ImGui.Text($"Distance: {Vector3.Distance(Networking.LocalPlayer.GetPosition(), _target.GetPosition()):F2}m");
         }
         else
         {
-            ImGui.TextColored(new SysVec4(1, 0.5f, 0.5f, 1), "No target selected");
+            ImGui.TextColored(new(1, 0.5f, 0.5f, 1), "No target selected");
         }
     }
 }

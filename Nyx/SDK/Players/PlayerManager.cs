@@ -22,14 +22,14 @@ public class PlayerManager : BaseManager<VRCPlayerApi, PlayerData>
         var position = player.GetPosition();
         var camera = Camera.main;
         
-        return new PlayerData
+        return new()
         {
             Name = player.displayName,
             Distance = Vector3.Distance(camera.transform.position, position),
             ScreenPosition = ScreenUtils.WorldToScreenPoint(camera, position),
             BoxCorners = CalculatePlayerBounds(camera, player),
             BonePositions = GetBonePositions(camera, player),
-            OriginalReference = new WeakReference(player)
+            OriginalReference = new(player)
         };
     }
 
@@ -39,7 +39,7 @@ public class PlayerManager : BaseManager<VRCPlayerApi, PlayerData>
         float width = height * 0.5f;
         var bounds = new Bounds(
             player.GetPosition() + new Vector3(0, height * 0.5f, 0),
-            new Vector3(width, height, width));
+            new(width, height, width));
             
         return CalculateBoxCorners(camera, bounds);
     }

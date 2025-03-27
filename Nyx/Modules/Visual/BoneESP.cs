@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ImGuiNET;
 using Nyx.Core.Settings;
+using Nyx.Core.Utils;
 using Nyx.SDK.Constants;
 using Nyx.SDK.Players;
 using UnityEngine;

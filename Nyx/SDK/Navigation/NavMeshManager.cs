@@ -21,13 +21,13 @@ public class NavMeshManager : BaseManager<NavMeshAgent, NavMeshAgentData>
         var bounds = new Bounds(center, size);
         var camera = Camera.main;
 
-        return new NavMeshAgentData
+        return new()
         {
             Name = agent.gameObject.name,
             Distance = Vector3.Distance(camera.transform.position, position),
             ScreenPosition = ScreenUtils.WorldToScreenPoint(camera, position),
             BoxCorners = CalculateBoxCorners(camera, bounds),
-            OriginalReference = new WeakReference(agent)
+            OriginalReference = new(agent)
         };
     }
 }

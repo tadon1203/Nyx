@@ -8,7 +8,6 @@ using VRC.Core;
 
 namespace Nyx.Patching;
 
-
 [HarmonyPatch(typeof(ObjectPublicStBoStDaBo1StILBo1Unique), nameof(ObjectPublicStBoStDaBo1StILBo1Unique.Method_Public_Static_ApiVRChatSubscription_0))]
 class FakeVRCPlusPatch
 {
@@ -38,7 +37,7 @@ class FakeVRCPlusPatch
         result._isBulkGift_k__BackingField = false;
         result._giftedBy_k__BackingField = "";
         result._giftedByDisplayName_k__BackingField = "";
-        result._licenseGroups_k__BackingField = new List<string>();
+        result._licenseGroups_k__BackingField = new();
                 
         result.transactionId = "txn_" + Guid.NewGuid();
         result.steamItemId = "4000";
@@ -57,7 +56,7 @@ class FakeVRCPlusPatch
         result.isBulkGift = false;
         result.giftedBy = "";
         result.giftedByDisplayName = "";
-        result.licenseGroups = new List<string>();
+        result.licenseGroups = new();
 
         __result = result;
     }

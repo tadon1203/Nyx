@@ -23,7 +23,7 @@ public static class NotificationManager
 		
 		var notification = new Notification(title, content, duration);
 		SysVec2 windowSize = ImGui.GetIO().DisplaySize;
-		notification.Position = new SysVec2(windowSize.X - Width - Padding, windowSize.Y - Padding);
+		notification.Position = new(windowSize.X - Width - Padding, windowSize.Y - Padding);
 		notification.CurrentY = windowSize.Y - Padding;
 		notification.StartTime = ImGui.GetTime();
 		Notifications.Add(notification);
@@ -46,7 +46,7 @@ public static class NotificationManager
 			{
 				notification.Alpha = notification.TimeLeft / FadeOutTime;
 					
-				notification.Position = new SysVec2(
+				notification.Position = new(
 					notification.Position.X + (12.0f * deltaTime),
 					notification.Position.Y
 				);
@@ -72,7 +72,7 @@ public static class NotificationManager
 				
 			float easeFactor = 10.0f * deltaTime;
 			notification.CurrentY = MathUtils.Lerp(notification.CurrentY, targetY, easeFactor);
-			notification.Position = new SysVec2(windowSize.X - Width - Padding, notification.CurrentY);
+			notification.Position = new(windowSize.X - Width - Padding, notification.CurrentY);
 			targetY -= Padding;
 		}
 	}
@@ -91,28 +91,28 @@ public static class NotificationManager
 		SysVec2 position = notification.Position;
 		float height = CalculateNotificationHeight(notification);
 		
-		uint backgroundColor = ImGui.ColorConvertFloat4ToU32(new SysVec4(0.06f, 0.06f, 0.06f, notification.Alpha * 0.94f));
+		uint backgroundColor = ImGui.ColorConvertFloat4ToU32(new(0.06f, 0.06f, 0.06f, notification.Alpha * 0.94f));
 		
-		uint borderColor = ImGui.ColorConvertFloat4ToU32(new SysVec4(0.43f, 0.43f, 0.50f, notification.Alpha * 0.50f));
+		uint borderColor = ImGui.ColorConvertFloat4ToU32(new(0.43f, 0.43f, 0.50f, notification.Alpha * 0.50f));
 		
-		uint titleColor = ImGui.ColorConvertFloat4ToU32(new SysVec4(1.0f, 1.0f, 1.0f, notification.Alpha));
-		uint contentColor = ImGui.ColorConvertFloat4ToU32(new SysVec4(0.50f, 0.50f, 0.50f, notification.Alpha * 0.9f));
+		uint titleColor = ImGui.ColorConvertFloat4ToU32(new(1.0f, 1.0f, 1.0f, notification.Alpha));
+		uint contentColor = ImGui.ColorConvertFloat4ToU32(new(0.50f, 0.50f, 0.50f, notification.Alpha * 0.9f));
 		
-		uint accentBarColor = ImGui.ColorConvertFloat4ToU32(new SysVec4(
+		uint accentBarColor = ImGui.ColorConvertFloat4ToU32(new(
 			AccentColor.X, AccentColor.Y, AccentColor.Z, notification.Alpha));
 			
 		float cornerRadius = 6.0f;
 			
 		drawList.AddRectFilled(
 			position,
-			new SysVec2(position.X + Width, position.Y + height),
+			new(position.X + Width, position.Y + height),
 			backgroundColor,
 			cornerRadius
 		);
 			
 		drawList.AddRectFilled(
 			position,
-			new SysVec2(position.X + 4.0f, position.Y + height),
+			new(position.X + 4.0f, position.Y + height),
 			accentBarColor,
 			cornerRadius, 
 			ImDrawFlags.RoundCornersLeft
@@ -122,31 +122,31 @@ public static class NotificationManager
 		float progressWidth = Width * timeRatio;
 			
 		drawList.AddRectFilled(
-			new SysVec2(position.X, position.Y),
-			new SysVec2(position.X + progressWidth, position.Y + 2.0f),
+			new(position.X, position.Y),
+			new(position.X + progressWidth, position.Y + 2.0f),
 			accentBarColor,
 			0.0f
 		);
 			
 		drawList.AddRect(
 			position,
-			new SysVec2(position.X + Width, position.Y + height),
+			new(position.X + Width, position.Y + height),
 			borderColor,
 			cornerRadius,
 			ImDrawFlags.RoundCornersAll,
 			1.0f
 		);
 			
-		SysVec2 titlePos = new SysVec2(position.X + Padding + 4.0f, position.Y + Padding);
+		SysVec2 titlePos = new(position.X + Padding + 4.0f, position.Y + Padding);
 			
 		drawList.AddText(
-			new SysVec2(titlePos.X + 1, titlePos.Y + 1),
-			ImGui.ColorConvertFloat4ToU32(new SysVec4(0.0f, 0.0f, 0.0f, notification.Alpha * 0.5f)),
+			new(titlePos.X + 1, titlePos.Y + 1),
+			ImGui.ColorConvertFloat4ToU32(new(0.0f, 0.0f, 0.0f, notification.Alpha * 0.5f)),
 			notification.Title
 		);
 		drawList.AddText(titlePos, titleColor, notification.Title);
 			
-		SysVec2 contentPos = new SysVec2(position.X + Padding + 4.0f, position.Y + Padding + ImGui.GetTextLineHeightWithSpacing());
+		SysVec2 contentPos = new(position.X + Padding + 4.0f, position.Y + Padding + ImGui.GetTextLineHeightWithSpacing());
 		drawList.AddText(
 			ImGui.GetFont(),
 			ImGui.GetFontSize(),

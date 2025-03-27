@@ -1,5 +1,6 @@
 using ImGuiNET;
 using Nyx.Core.Settings;
+using Nyx.Core.Utils;
 using Nyx.SDK.Navigation;
 using Nyx.SDK.Pickups;
 using Nyx.SDK.Players;
@@ -78,56 +79,6 @@ public class ThreeDimensionalESP : ModuleBase
                 {
                     ESPUtils.Draw3DBox(drawList, pickup.BoxCorners, _pickupAvailableColor, _lineThickness, _fillOpacity);
                 }
-            }
-        }
-    }
-    {
-        int[][] edges =
-        [
-            [0, 1], [1, 2], [2, 3], [3, 0],
-            [4, 5], [5, 6], [6, 7], [7, 4],
-            [0, 4], [1, 5], [2, 6], [3, 7]
-        ];
-
-        uint fillColor = ImGui.ColorConvertFloat4ToU32(new SysVec4(
-            ImGui.ColorConvertU32ToFloat4(color).X,
-            ImGui.ColorConvertU32ToFloat4(color).Y,
-            ImGui.ColorConvertU32ToFloat4(color).Z, 
-            _fillOpacity));
-
-        foreach (int[] edge in edges)
-        {
-            int a = edge[0];
-            int b = edge[1];
-
-            if (screenCorners[a].X > -999 && screenCorners[b].X > -999)
-            {
-                drawList.AddLine(screenCorners[a], screenCorners[b], color, _lineThickness);
-            }
-        }
-
-        int[][] faces =
-        [
-            [0, 1, 2, 3], 
-            [4, 5, 6, 7],
-            [0, 1, 5, 4],
-            [1, 2, 6, 5],
-            [2, 3, 7, 6],
-            [3, 0, 4, 7] 
-        ];
-
-        foreach (int[] face in faces)
-        {
-            if (screenCorners[face[0]].X > -999 && screenCorners[face[1]].X > -999 &&
-                screenCorners[face[2]].X > -999 && screenCorners[face[3]].X > -999)
-            {
-                drawList.AddQuadFilled(
-                    screenCorners[face[0]],
-                    screenCorners[face[1]],
-                    screenCorners[face[2]],
-                    screenCorners[face[3]],
-                    fillColor
-                );
             }
         }
     }

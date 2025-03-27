@@ -56,7 +56,7 @@ namespace Nyx.Modules.Visual
 
         private void RenderContentArea()
         {
-            ImGui.BeginChild("ContentArea", new SysVec2(0, -ImGui.GetFrameHeightWithSpacing()));
+            ImGui.BeginChild("ContentArea", new(0, -ImGui.GetFrameHeightWithSpacing()));
             {
                 RenderModuleList();
                 
@@ -105,7 +105,7 @@ namespace Nyx.Modules.Visual
                 .OrderBy(m => m.Name)
                 .ToList();
 
-            ImGui.BeginChild("ModuleList", new SysVec2(ImGui.GetContentRegionAvail().X * ModuleListWidthRatio, 0));
+            ImGui.BeginChild("ModuleList", new(ImGui.GetContentRegionAvail().X * ModuleListWidthRatio, 0));
             
             foreach (var module in modules)
             {
@@ -134,7 +134,7 @@ namespace Nyx.Modules.Visual
         
         private void RenderModuleSettings()
         {
-            ImGui.BeginChild("ModuleSettings", new SysVec2(0, 0));
+            ImGui.BeginChild("ModuleSettings", new(0, 0));
             {
                 RenderModuleHeader();
                 RenderModuleStateControls();
@@ -196,7 +196,7 @@ namespace Nyx.Modules.Visual
         {
             if (!_showKeyBindWindow) return;
 
-            ImGui.SetNextWindowSize(new SysVec2(300, 120), ImGuiCond.Always);
+            ImGui.SetNextWindowSize(new(300, 120), ImGuiCond.Always);
             if (ImGui.Begin("Key Binding", ref _showKeyBindWindow, 
                 ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoDocking))
             {
@@ -212,7 +212,7 @@ namespace Nyx.Modules.Visual
             ImGui.Text($"Current Key: {_pendingKeyBind}");
             ImGui.Spacing();
             
-            if (ImGui.Button("Clear", new SysVec2(120, 0)))
+            if (ImGui.Button("Clear", new(120, 0)))
             {
                 _selectedModule.SetToggleKey(KeyCode.None);
                 _showKeyBindWindow = false;
@@ -220,7 +220,7 @@ namespace Nyx.Modules.Visual
             
             ImGui.SameLine();
             
-            if (ImGui.Button("Cancel", new SysVec2(120, 0)))
+            if (ImGui.Button("Cancel", new(120, 0)))
             {
                 _showKeyBindWindow = false;
             }

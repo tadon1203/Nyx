@@ -61,7 +61,7 @@ public static class ConsoleLogger
 
 			lock (Lock)
 			{
-				using (StreamWriter writer = new StreamWriter(logFilePath, true))
+				using (StreamWriter writer = new(logFilePath, true))
 				{
 					writer.WriteLine(logMessage);
 				}
