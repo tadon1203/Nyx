@@ -25,7 +25,6 @@ public class NavMeshManager : BaseManager<NavMeshAgent, NavMeshAgentData>
         {
             Name = agent.gameObject.name,
             Distance = Vector3.Distance(camera.transform.position, position),
-            IsVisible = ScreenUtils.IsVisible(camera, position),
             ScreenPosition = ScreenUtils.WorldToScreenPoint(camera, position),
             BoxCorners = CalculateBoxCorners(camera, bounds),
             OriginalReference = new WeakReference(agent)

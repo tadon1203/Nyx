@@ -12,7 +12,10 @@ namespace Nyx.SDK.Players;
 public class PlayerManager : BaseManager<VRCPlayerApi, PlayerData>
 {
     public override void FindObjects()
-        => TrackedObjects = VRCPlayerApi.AllPlayers.ToArray().ToList();
+        => TrackedObjects = VRCPlayerApi.AllPlayers
+            .ToArray()
+            .Where(player => !player.isLocal)
+            .ToList();
 
     protected override PlayerData CreateObjectData(VRCPlayerApi player)
     {
@@ -23,7 +26,6 @@ public class PlayerManager : BaseManager<VRCPlayerApi, PlayerData>
         {
             Name = player.displayName,
             Distance = Vector3.Distance(camera.transform.position, position),
-            IsVisible = ScreenUtils.IsVisible(camera, position),
             ScreenPosition = ScreenUtils.WorldToScreenPoint(camera, position),
             BoxCorners = CalculatePlayerBounds(camera, player),
             BonePositions = GetBonePositions(camera, player),

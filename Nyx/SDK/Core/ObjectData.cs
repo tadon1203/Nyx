@@ -6,10 +6,11 @@ public class ObjectData
 {
     public string Name { get; init; }
     public float Distance { get; init; }
-    public bool IsVisible { get; init; }
     public SysVec2 ScreenPosition { get; init; }
     public SysVec2[] BoxCorners { get; init; }
     public WeakReference OriginalReference { get; init; }
+    
+    public bool IsVisible => ScreenPosition.X > -999;
 
     public float Height => CalculateHeight();
 

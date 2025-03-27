@@ -1,8 +1,5 @@
 using ImGuiNET;
 using Nyx.Core.Settings;
-using Nyx.SDK.Navigation;
-using Nyx.SDK.Pickups;
-using Nyx.SDK.Players;
 using VRC.SDKBase;
 
 namespace Nyx.Modules.Visual;

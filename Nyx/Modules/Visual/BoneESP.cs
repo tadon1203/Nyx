@@ -64,7 +64,11 @@ namespace Nyx.Modules.Visual
 
                 foreach (var bone in bonePositions)
                 {
-                    drawList.AddCircleFilled(bone.Value, circleRadius, jointColor);
+                    SysVec2 bonePos = bone.Value;
+                    if (bonePos.X > -999)
+                    {
+                        drawList.AddCircleFilled(bone.Value, circleRadius, jointColor);
+                    }
                 }
             }
 
@@ -77,7 +81,11 @@ namespace Nyx.Modules.Visual
                     if (bonePositions.TryGetValue(connection.Item1, out var start) && 
                         bonePositions.TryGetValue(connection.Item2, out var end))
                     {
-                        drawList.AddLine(start, end, lineColor, _lineThickness);
+                        if (start.X > -999 || end.X > -999)
+                        {
+                            drawList.AddLine(start, end, lineColor, _lineThickness);
+                        }
+
                     }
                 }
             }

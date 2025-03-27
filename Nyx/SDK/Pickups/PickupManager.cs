@@ -24,7 +24,6 @@ public class PickupManager : BaseManager<VRC_Pickup, PickupData>
         {
             Name = pickup.gameObject.name,
             Distance = Vector3.Distance(camera.transform.position, position),
-            IsVisible = ScreenUtils.IsVisible(camera, position),
             ScreenPosition = ScreenUtils.WorldToScreenPoint(camera, position),
             BoxCorners = CalculateBoxCorners(camera, bounds),
             InteractionText = pickup.InteractionText,
