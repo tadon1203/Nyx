@@ -1,66 +1,34 @@
-using System.Collections.Generic;
+using System;
+using System.Linq;
+using Nyx.SDK.Core;
 using Nyx.SDK.Utils;
 using UnityEngine;
 using VRC.SDKBase;
+using Object = UnityEngine.Object;
 
 namespace Nyx.SDK.Pickups;
 
-public static class PickupManager
+public class PickupManager : BaseManager<VRC_Pickup, PickupData>
 {
-    private static List<VRC_Pickup> _pickups = new();
-    private static List<NyxPickup> _pickupData = new();
-    private static readonly object Lock = new();
-    
-    public static List<NyxPickup> GetPickupData()
-    {
-        lock (Lock)
-        {
-            return [.._pickupData];
-        }
-    }
-    
-    public static void UpdateObjectList()
-    {
-        _pickups = new List<VRC_Pickup>(Object.FindObjectsOfType<VRC_Pickup>());
-    }
+    public override void FindObjects() 
+        => TrackedObjects = Object.FindObjectsOfType<VRC_Pickup>().ToList();
 
-    public static void Update()
+    protected override PickupData CreateObjectData(VRC_Pickup pickup)
     {
-        Camera camera = Camera.main;
-        if (camera == null)
-            return;
-        
-        Vector3 cameraPosition = camera.transform.position;
-        var tempPickupData = new List<NyxPickup>();
+        var position = pickup.transform.position;
+        var collider = pickup.GetComponent<Collider>();
+        var bounds = collider?.bounds ?? new Bounds(position, Vector3.one * 0.5f);
+        var camera = Camera.main;
 
-        foreach (var pickup in _pickups)
+        return new PickupData
         {
-            if (pickup == null)
-                continue;
-            
-            Vector3 position = pickup.transform.position;
-            float distance = Vector3.Distance(cameraPosition, position);
-            float sizeScalar = pickup.GetComponent<Collider>()?.bounds.size.magnitude ?? 0.5f;
-            Vector3 boundSize = new Vector3(sizeScalar, sizeScalar, sizeScalar);
-            Bounds bounds = new(position, boundSize);
-
-            Vector3 screenPosRaw = camera.WorldToScreenPoint(position);
-            SysVec2 screenPos = ScreenPosUtils.GetScreenPositionSafe(screenPosRaw);
-            
-            var data = new NyxPickup
-            {
-                Name = $"{pickup.gameObject.name} | {pickup.InteractionText}",
-                Distance = distance,
-                IsVisible = screenPosRaw.z > 0,
-                ScreenPosition = screenPos,
-                BoxCorners = BoundsUtils.CalculateScreenCorners(camera, bounds),
-            };
-            tempPickupData.Add(data);
-        }
-        
-        lock (Lock)
-        {
-            _pickupData = tempPickupData;
-        }
+            Name = pickup.gameObject.name,
+            Distance = Vector3.Distance(camera.transform.position, position),
+            IsVisible = ScreenUtils.IsVisible(camera, position),
+            ScreenPosition = ScreenUtils.WorldToScreenPoint(camera, position),
+            BoxCorners = CalculateBoxCorners(camera, bounds),
+            InteractionText = pickup.InteractionText,
+            OriginalReference = new WeakReference(pickup),
+        };
     }
 }

@@ -8,23 +8,40 @@ namespace Nyx.SDK;
 
 public static class SDK
 {
-    private const float UpdateInterval = 1.0f;
-    private static float _timeSinceLastUpdate;
+    private const float ObjectFindInterval = 5.0f;
+    private static float _lastObjectFindTime;
     
+    private const float PlayerFindInterval = 0.1f;
+    private static float _lastPlayerFindTime;
+    
+    public static PlayerManager Players { get; } = new();
+    public static PickupManager Pickups { get; } = new();
+    public static NavMeshManager NavMeshAgents { get; } = new();
+
     public static void Update()
     {
-        if (Networking.LocalPlayer == null)
+        if (Networking.LocalPlayer == null) 
             return;
         
-        _timeSinceLastUpdate += Time.deltaTime;
-        if (_timeSinceLastUpdate >= UpdateInterval)
+        var currentTime = Time.time;
+        
+        if (currentTime - _lastObjectFindTime > ObjectFindInterval)
         {
-            NavMeshManager.UpdateObjectList();
-            PickupManager.UpdateObjectList();
-            _timeSinceLastUpdate = 0.0f;
+            Pickups.FindObjects();
+            NavMeshAgents.FindObjects();
+            
+            _lastObjectFindTime = currentTime;
         }
-        PlayerManager.Update();
-        NavMeshManager.Update();
-        PickupManager.Update();
+
+        if (currentTime - _lastPlayerFindTime > PlayerFindInterval)
+        {
+            Players.FindObjects();
+            
+            _lastPlayerFindTime = currentTime;
+        }
+        
+        Players.UpdateObjects();
+        Pickups.UpdateObjects();
+        NavMeshAgents.UpdateObjects();
     }
 }

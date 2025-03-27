@@ -3,7 +3,7 @@ using Nyx.Patching;
 
 namespace Nyx.SDK;
 
-public static class NetworkManager
+public static class NetworkingUtils
 {
     public static bool SendEvent(byte eventCode, object eventContent, int sender)
     {

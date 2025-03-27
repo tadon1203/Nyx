@@ -9,12 +9,12 @@ namespace Nyx.Core.Managers;
 
 public static class NotificationManager
 {
-	private static readonly List<Notification> Notifications = new();
+	private static readonly List<Notification> Notifications = [];
 	private const float Padding = 12.0f;
 	private const float Width = 300.0f;
 	private const float FadeOutTime = 1.5f;
 	
-	private static readonly SysVec4 AccentColor = new SysVec4(0.16f, 0.29f, 0.48f, 1.00f);
+	private static readonly SysVec4 AccentColor = new(0.16f, 0.29f, 0.48f, 1.00f);
 		
 	public static void AddNotification(string title, string content, float duration = 5.0f)
 	{

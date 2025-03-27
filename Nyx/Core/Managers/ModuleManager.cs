@@ -98,7 +98,7 @@ public static class ModuleManager
         var settingsData = JsonSerializer.Deserialize<ModuleSettingsData>(
             File.ReadAllText("NyxSettings.json"));
 
-        foreach (var moduleSettings in settingsData?.Modules ?? Array.Empty<ModuleSettings>())
+        foreach (var moduleSettings in settingsData?.Modules ?? [])
         {
             var module = GetModule(moduleSettings.ModuleName);
             if (module == null) continue;

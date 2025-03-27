@@ -17,7 +17,7 @@ public static class ConsoleLogger
 	[DllImport("kernel32.dll", SetLastError = true)]
 	private static extern bool AllocConsole();
 
-	private static readonly object Lock = new object();
+	private static readonly object Lock = new();
 
 	public static void Init()
 	{

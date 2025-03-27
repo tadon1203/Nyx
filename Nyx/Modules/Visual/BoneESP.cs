@@ -41,20 +41,16 @@ namespace Nyx.Modules.Visual
         {
             if (!IsEnabled || Networking.LocalPlayer == null)
                 return;
-
-            var localPlayerData = PlayerManager.GetPlayerData();
+            
             ImDrawListPtr drawList = ImGui.GetBackgroundDrawList();
             
-            foreach (var playerEntry in localPlayerData)
+            foreach (var player in SDK.SDK.Players.ObjectsData)
             {
-                VRCPlayerApi player = playerEntry.Key;
-                NyxPlayer data = playerEntry.Value;
-
-                if (player == null || !data.IsVisible || data.Distance > _maxDistance ||
-                    data.BoneScreenPositions == null || data.BoneScreenPositions.Count == 0)
+                if (!player.IsVisible || player.Distance > _maxDistance ||
+                    player.BonePositions == null || player.BonePositions.Count == 0)
                     continue;
 
-                DrawBoneEsp(drawList, data.BoneScreenPositions, data.Distance);
+                DrawBoneEsp(drawList, player.BonePositions, player.Distance);
             }
         }
 

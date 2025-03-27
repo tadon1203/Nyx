@@ -51,26 +51,23 @@ public class ThreeDimensionalESP : ModuleBase
         if (_showPlayerBoxes)
         { 
             uint playerColor = ImGui.ColorConvertFloat4ToU32(_playerBoxColor);
-            foreach (var playerEntry in PlayerManager.GetPlayerData())
+            foreach (var player in SDK.SDK.Players.ObjectsData)
             {
-                if (playerEntry.Value != null && 
-                    playerEntry.Value.IsVisible && 
-                    playerEntry.Value.Distance <= _maxDistance && 
-                    playerEntry.Value.BoxCorners != null)
+                if (player.IsVisible && 
+                    player.Distance <= _maxDistance && 
+                    player.BoxCorners != null)
                 { 
-                    Draw3DBox(drawList, playerEntry.Value.BoxCorners, playerColor);
+                    Draw3DBox(drawList, player.BoxCorners, playerColor);
                 }
             }
         }
-
-
+        
         if (_showNavMeshAgentBoxes)
         {
             uint agentColor = ImGui.ColorConvertFloat4ToU32(_navMeshAgentActiveColor);
-            foreach (var agent in NavMeshManager.GetAgentData())
+            foreach (var agent in SDK.SDK.NavMeshAgents.ObjectsData)
             {
-                if (agent != null && 
-                    agent.IsVisible && 
+                if (agent.IsVisible && 
                     agent.Distance <= _maxDistance && 
                     agent.BoxCorners != null)
                 {
@@ -82,10 +79,9 @@ public class ThreeDimensionalESP : ModuleBase
         if (_showPickupBoxes)
         {
             uint pickupColor = ImGui.ColorConvertFloat4ToU32(_pickupAvailableColor);
-            foreach (var pickup in PickupManager.GetPickupData())
+            foreach (var pickup in SDK.SDK.Pickups.ObjectsData)
             {
-                if (pickup != null && 
-                    pickup.IsVisible && 
+                if (pickup.IsVisible && 
                     pickup.Distance <= _maxDistance && 
                     pickup.BoxCorners != null)
                 {

@@ -30,46 +30,43 @@ public class TwoDimensionalESP : ModuleBase
     {
         if (Networking.LocalPlayer == null)
             return;
-            
-        var localPlayerData = PlayerManager.GetPlayerData();
-        var localNavMeshData = NavMeshManager.GetAgentData();
-        var localPickupData = PickupManager.GetPickupData();
+
+        var players = SDK.SDK.Players.ObjectsData;
+        var agents = SDK.SDK.NavMeshAgents.ObjectsData;
+        var pickups = SDK.SDK.Pickups.ObjectsData;
 
         ImDrawListPtr drawList = ImGui.GetBackgroundDrawList();
 
         if (_showPlayerBoxes)
         {
-            foreach (var playerEntry in localPlayerData)
+            foreach (var player in players)
             {
-                VRCPlayerApi player = playerEntry.Key;
-                NyxPlayer data = playerEntry.Value;
-
-                if (player == null || !data.IsVisible || data.Distance > _maxDistance)
+                if (!player.IsVisible || player.Distance > _maxDistance)
                     continue;
 
-                Draw2DBox(drawList, data.ScreenPosition, data.GetHeight());
+                Draw2DBox(drawList, player.ScreenPosition, player.Height);
             }
         }
 
         if (_showNavMeshAgentBoxes)
         {
-            foreach (var agent in localNavMeshData)
+            foreach (var agent in agents)
             {
                 if (!agent.IsVisible || agent.Distance > _maxDistance)
                     continue;
 
-                Draw2DBox(drawList, agent.ScreenPosition, agent.GetHeight());
+                Draw2DBox(drawList, agent.ScreenPosition, agent.Height);
             }
         }
 
         if (_showPickupBoxes)
         {
-            foreach (var pickup in localPickupData)
+            foreach (var pickup in pickups)
             {
                 if (!pickup.IsVisible || pickup.Distance > _maxDistance)
                     continue;
 
-                Draw2DBox(drawList, pickup.ScreenPosition, pickup.GetHeight());
+                Draw2DBox(drawList, pickup.ScreenPosition, pickup.Height);
             }
         }
     }
